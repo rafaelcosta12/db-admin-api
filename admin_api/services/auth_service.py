@@ -1,12 +1,15 @@
-from fastapi import HTTPException
+from typing import Annotated
+from fastapi import Depends, HTTPException
+from admin_api.database import get_db_connection
 from admin_api.repository import AuthRepository
 from psycopg2.extensions import connection
 from passlib.context import CryptContext
 
 from admin_api import schemas
+from admin_api.services.base_service import BaseService
 
 
-class AuthService:
+class AuthService(BaseService):
     pwd_context = CryptContext(schemes=["bcrypt"])
     
     def __init__(self, database: connection):

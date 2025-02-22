@@ -169,16 +169,24 @@ def get_repository(database: Annotated[connection, Depends(get_db_connection)]):
     return Repository(database)
 
 
-class AuthRepository:
+class BaseRepository:
     def __init__(self, database: connection):
         self.database = database
+    
+    def _execute(self, query: str, params: dict):
+        print(query)
+        print(params)
+        
+        with self.database.cursor() as cur:
+            cur.execute(query, params)
+            return cur.fetchall()
 
+class AuthRepository(BaseRepository):
     def get_user(self, id: int = None, email: str = None):
-        columns = ["id", "name", "email", "password", "created_at", "updated_at", "disabled"]
+        columns = schemas.User.model_fields.keys()
         query = f"""
         SELECT {', '.join(columns)}
-        FROM users
-        WHERE 1 = 1
+        FROM admin_api.users
         """
         where = []
         
@@ -188,21 +196,20 @@ class AuthRepository:
         if email:
             where.append("email = %(email)s")
 
-        query += " AND ".join(where)
+        if where:
+            query += 'WHERE ' + " AND ".join(where)
         
-        with self.database.cursor() as cur:
-            cur.execute(query, {"id": id, "email": email})
-            return schemas.User({key: val for key, val in zip(columns, cur.fetchone())})
+        for row in self._execute(query, {"id": id, "email": email}):
+            return schemas.User(**{key: val for key, val in zip(columns, row)})
 
     def create_user(self, name, email, password) -> int:
-        with self.database.cursor() as cur:
-            query = """
-            INSERT INTO users (name, email, password) 
-            VALUES (%s, %s, %s) 
-            RETURNING id;
-            """
-            cur.execute(query, [name, email, password])
-            return cur.fetchone()[0]
+        query = """
+        INSERT INTO admin_api.users (name, email, password) 
+        VALUES (%s, %s, %s) 
+        RETURNING id;
+        """
+        rows = self._execute(query, [name, email, password])
+        return rows[0][0]
 
 
 def get_auth_repository(database: Annotated[connection, Depends(get_db_connection)]):
