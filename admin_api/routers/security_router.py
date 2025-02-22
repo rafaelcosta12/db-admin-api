@@ -1,27 +1,17 @@
-from passlib.context import CryptContext
-from fastapi import APIRouter, Depends, HTTPException
-import jwt
+from fastapi import APIRouter, Depends
 
 from .. import schemas
-from ..repository import Repository, get_auth_repository
 from ..services.auth_service import AuthService
 
 
-pwd_context = CryptContext(schemes=["bcrypt"])
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login")
 async def login(
-    input: schemas.Login,
-    repository: Repository = Depends(get_auth_repository)
-):
-    return {"message": "Login successful"}
-
-@router.post("/logout")
-async def logout(
-    repository: Repository = Depends(get_auth_repository)
-):
-    return {"message": "Logout successful"}
+    data: schemas.Login,
+    service: AuthService = Depends(AuthService.from_di)
+) -> schemas.LoginOutput:
+    return service.login(data)
 
 @router.post("/register")
 async def register(

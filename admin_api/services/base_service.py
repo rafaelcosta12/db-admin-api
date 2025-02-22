@@ -9,5 +9,5 @@ class BaseService:
     def from_di(cls, database: Annotated[connection, Depends(get_db_connection)]):
         return cls(database)
     
-    def __init__(self, database):
+    def __init__(self, database: connection):
         self.database = database

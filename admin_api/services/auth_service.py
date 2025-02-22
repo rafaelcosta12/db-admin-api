@@ -1,11 +1,12 @@
-from typing import Annotated
-from fastapi import Depends, HTTPException
-from admin_api.database import get_db_connection
-from admin_api.repository import AuthRepository
+import jwt
+from datetime import datetime, timedelta, timezone
+from fastapi import HTTPException
 from psycopg2.extensions import connection
 from passlib.context import CryptContext
 
 from admin_api import schemas
+from admin_api.configuration import Configuration
+from admin_api.repository import AuthRepository
 from admin_api.services.base_service import BaseService
 
 
@@ -37,9 +38,16 @@ class AuthService(BaseService):
         if not user or not self.pwd_context.verify(data.password, user.password):
             raise HTTPException(status_code=400, detail="incorrect username or password")
         
-        # access_token = create_access_token(found, scopes=form_data.scopes)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=Configuration.token_expiration_minutes)
+        
+        encoded_jwt = jwt.encode(
+            payload={
+                "sub": user.email,
+                "scopes": [],
+                "exp": expire,
+            }, 
+            key=Configuration.secret_key,
+            algorithm=Configuration.algorithm,
+        )
 
-        return schemas.LoginOutput(access_token="")
-
-    def logout(self):
-        pass
+        return schemas.LoginOutput(access_token=encoded_jwt)
