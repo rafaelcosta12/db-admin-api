@@ -3,7 +3,7 @@ from fastapi import Depends
 from psycopg2.extensions import connection
 
 from .database import get_db_connection
-from .schemas import ColumnDetails, TableDetails, ConstraintDetails
+from .repositories.base_repository import BaseRepository
 from . import schemas
 
 
@@ -11,7 +11,7 @@ class Repository:
     def __init__(self, database: connection):
         self.database = database
 
-    def map_values(self, values: list, columns: List[ColumnDetails]):
+    def map_values(self, values: list, columns: List[schemas.ColumnDetails]):
         result = {}
         for column, value in zip(columns, values):
             result[column.name] = value
@@ -28,12 +28,12 @@ class Repository:
         """
         cur.execute(table_query)
         rows = cur.fetchall()
-        result: List[TableDetails] = []
+        result: List[schemas.TableDetails] = []
 
         col_names = ["name", "type", "schema"]
         for table in rows:
             k = {key: val for key, val in zip(col_names, table)}
-            result.append(TableDetails(**k))
+            result.append(schemas.TableDetails(**k))
 
         return result
 
@@ -53,7 +53,7 @@ class Repository:
         col_names = ["name", "type", "schema"]
         
         k = {key: val for key, val in zip(col_names, table_details)}
-        table_details = TableDetails(**k)
+        table_details = schemas.TableDetails(**k)
         
         table_details.columns = self.get_table_columns(table_details.schema, table_details.name, cur=cur)
         table_details.constraints = self.get_table_constraints(table_details.schema, table_details.name, cur=cur)
@@ -77,7 +77,7 @@ class Repository:
         col_names = ["name", "udt_name", "is_nullable", "default", "character_maximum_length"]
         for row in rows:
             k = {key: val for key, val in zip(col_names, row)}
-            result.append(ColumnDetails(**k))
+            result.append(schemas.ColumnDetails(**k))
         
         return result
 
@@ -106,7 +106,7 @@ class Repository:
         for row in rows:
             k = {key: val for key, val in zip(col_names, row)}
             k["references"] = ".".join(row[3:]) if k["type"] == 'FOREIGN KEY' else None
-            result.append(ConstraintDetails(**k))
+            result.append(schemas.ConstraintDetails(**k))
         
         return result
 
@@ -167,49 +167,6 @@ class Repository:
 
 def get_repository(database: Annotated[connection, Depends(get_db_connection)]):
     return Repository(database)
-
-
-class BaseRepository:
-    def __init__(self, database: connection):
-        self.database = database
-    
-    def _execute(self, query: str, params: dict):
-        print(query)
-        print(params)
-        
-        with self.database.cursor() as cur:
-            cur.execute(query, params)
-            return cur.fetchall()
-
-class AuthRepository(BaseRepository):
-    def get_user(self, id: int = None, email: str = None):
-        columns = schemas.User.model_fields.keys()
-        query = f"""
-        SELECT {', '.join(columns)}
-        FROM admin_api.users
-        """
-        where = []
-        
-        if id:
-            where.append("id = %(id)s")
-
-        if email:
-            where.append("email = %(email)s")
-
-        if where:
-            query += 'WHERE ' + " AND ".join(where)
-        
-        for row in self._execute(query, {"id": id, "email": email}):
-            return schemas.User(**{key: val for key, val in zip(columns, row)})
-
-    def create_user(self, name, email, password) -> int:
-        query = """
-        INSERT INTO admin_api.users (name, email, password) 
-        VALUES (%s, %s, %s) 
-        RETURNING id;
-        """
-        rows = self._execute(query, [name, email, password])
-        return rows[0][0]
 
 
 def get_auth_repository(database: Annotated[connection, Depends(get_db_connection)]):
