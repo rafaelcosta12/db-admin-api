@@ -1,7 +1,10 @@
-from typing import List, Any
+from typing import Annotated, List, Any
+from fastapi import Depends
 from psycopg2.extensions import connection
 
-from admin_api.schemas import ColumnDetails, TableDetails, ConstraintDetails
+from .database import get_db_connection
+from .schemas import ColumnDetails, TableDetails, ConstraintDetails
+from . import schemas
 
 
 class Repository:
@@ -161,3 +164,46 @@ class Repository:
         with self.database.cursor() as cur:
             cur.execute(delete_query.format(schema=schema, table=table, pk=table_details.pk), [row_pk])
 
+
+def get_repository(database: Annotated[connection, Depends(get_db_connection)]):
+    return Repository(database)
+
+
+class AuthRepository:
+    def __init__(self, database: connection):
+        self.database = database
+
+    def get_user(self, id: int = None, email: str = None):
+        columns = ["id", "name", "email", "password", "created_at", "updated_at", "disabled"]
+        query = f"""
+        SELECT {', '.join(columns)}
+        FROM users
+        WHERE 1 = 1
+        """
+        where = []
+        
+        if id:
+            where.append("id = %(id)s")
+
+        if email:
+            where.append("email = %(email)s")
+
+        query += " AND ".join(where)
+        
+        with self.database.cursor() as cur:
+            cur.execute(query, {"id": id, "email": email})
+            return schemas.User({key: val for key, val in zip(columns, cur.fetchone())})
+
+    def create_user(self, name, email, password) -> int:
+        with self.database.cursor() as cur:
+            query = """
+            INSERT INTO users (name, email, password) 
+            VALUES (%s, %s, %s) 
+            RETURNING id;
+            """
+            cur.execute(query, [name, email, password])
+            return cur.fetchone()[0]
+
+
+def get_auth_repository(database: Annotated[connection, Depends(get_db_connection)]):
+    return Repository(database)

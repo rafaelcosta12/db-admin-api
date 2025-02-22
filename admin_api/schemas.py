@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional, Any
+import datetime
 
 class ColumnDetails(BaseModel):
     name: str
@@ -43,3 +44,25 @@ class TableRowOperation(BaseModel):
     pk: Any
     message: str
     data: Optional[dict[str, Any]]
+
+
+class UserBase(BaseModel):
+    name: str
+    email: str
+    disabled: Optional[bool] = None
+
+class User(UserBase):
+    id: int
+    password: str
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+class UserCreate(UserBase):
+    password: str
+
+class Login(BaseModel):
+    email: str
+    password: str
+
+class LoginOutput(BaseModel):
+    access_token: str
