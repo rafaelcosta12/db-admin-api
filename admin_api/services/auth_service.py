@@ -1,6 +1,8 @@
+from typing import Annotated
+from fastapi.security import SecurityScopes
 import jwt
 from datetime import datetime, timedelta, timezone
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from psycopg2.extensions import connection
 from passlib.context import CryptContext
 
@@ -15,6 +17,18 @@ class AuthService(BaseService):
     
     def __init__(self, database: connection):
         self.repository = UsersRepository(database)
+    
+    def decode_token(self, token: str):
+        try:
+            payload = jwt.decode(
+                jwt=token,
+                key=Configuration.secret_key,
+                algorithms=[Configuration.algorithm]
+            )
+            username = payload.get("sub")
+            return payload if username else None
+        except jwt.PyJWTError:
+            return None
     
     def register(self, data: schemas.UserCreate) -> schemas.User:
         found = self.repository.get_user(email=data.email)

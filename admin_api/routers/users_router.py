@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
+from fastapi import APIRouter, Depends, Security
 
 from .. import schemas
 from ..services.user_service import UserService
@@ -11,6 +12,12 @@ async def list_users(
     service: UserService = Depends(UserService.from_di),
 ) -> list[schemas.User]:
     return service.repository.list_users()
+
+@router.get("/me")
+def me(
+    user: Annotated[schemas.User, Security(UserService.get_current_user)],
+) -> schemas.User:
+    return user
 
 @router.put("/{user_id}")
 async def update_user(

@@ -23,9 +23,18 @@ def ensure_test_user_exists():
         connection.commit()
     return user
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def setup():
     ensure_test_user_exists()
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_authentication():
+    response = client.post("/auth/login", json={
+        "email": default_user.email,
+        "password": default_user.password,
+    })
+    output_data = response.json()
+    client.headers = {"Authorization": f"Bearer {output_data['access_token']}"}
 
 def test_register_user_ok():
     input_data = {
@@ -79,4 +88,8 @@ def test_update_user_ok():
 def test_get_user_ok():
     user = ensure_test_user_exists()
     response = client.get(f"/users/{user.id}")
+    assert response.status_code == 200, response.text
+
+def test_get_current_user_ok():
+    response = client.get("/users/me")
     assert response.status_code == 200, response.text
