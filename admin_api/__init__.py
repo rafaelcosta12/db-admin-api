@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import tables_router, security_router
+from .routers import tables_router, security_router, users_router
 
 app = FastAPI()
 
 app.include_router(tables_router.router)
 app.include_router(security_router.router)
+app.include_router(users_router.router)
 
 app.add_middleware(
     CORSMiddleware,

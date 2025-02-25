@@ -19,8 +19,9 @@ def ensure_test_user_exists():
     service = AuthService(connection)
     user = service.repository.get_user(email=default_user.email)
     if user is None:
-        service.register(default_user)
+        user = service.register(default_user)
         connection.commit()
+    return user
 
 @pytest.fixture(scope="module", autouse=True)
 def setup():
@@ -52,5 +53,30 @@ def test_login_ok():
     response = client.post("/auth/login", json=input_data)
     assert response.status_code == 200, response.text
 
-def test_user_update_ok():
-    pass
+    output_data = response.json()
+    assert "access_token" in output_data
+
+def test_user_list_ok():
+    response = client.get("/users")
+    assert response.status_code == 200, response.text
+    assert len(response.json()) > 0
+
+def test_update_user_ok():
+    user = ensure_test_user_exists()
+    input_data = {
+        "name": get_random_str(),
+        "email": user.email,
+        "disabled": user.disabled,
+    }
+    response = client.put(f"/users/{user.id}", json=input_data)
+    assert response.status_code == 200, response.text
+
+    output_data = response.json()
+    assert output_data["name"] == input_data["name"]
+    assert output_data["email"] == input_data["email"]
+    assert output_data["disabled"] == input_data["disabled"]
+
+def test_get_user_ok():
+    user = ensure_test_user_exists()
+    response = client.get(f"/users/{user.id}")
+    assert response.status_code == 200, response.text

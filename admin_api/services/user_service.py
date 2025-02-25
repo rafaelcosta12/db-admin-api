@@ -15,4 +15,6 @@ class UserService(BaseService):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        self.repository.update_user(data)
+        self.repository.update_user(id, data)
+
+        return self.repository.get_user(id=id)

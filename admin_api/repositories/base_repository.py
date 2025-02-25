@@ -55,6 +55,7 @@ class BaseRepository:
         query = f"""
         UPDATE admin_api.users
         SET {", ".join([f"{key} = %({key})s" for key in data.keys()])}
-        WHERE id = %s;
+        WHERE id = %({self.pk_name})s
+        RETURNING {self.pk_name};
         """
         self._execute(query, {**data, self.pk_name: pk})
