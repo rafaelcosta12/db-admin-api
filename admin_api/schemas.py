@@ -57,6 +57,9 @@ class User(UserBase):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
+class UserUpdate(UserBase):
+    password: str
+
 class UserCreate(UserBase):
     password: str
 

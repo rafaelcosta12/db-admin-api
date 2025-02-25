@@ -24,7 +24,7 @@ def test_execute_method():
     connection.execute = mock.Mock(return_value=connection)
     connection.fetchall = mock.Mock(return_value=connection)
     
-    repository = BaseRepository(connection)
+    repository = BaseRepository(connection, "table")
 
     query = "SELECT * FROM table WHERE id = %(id)s"
     params = {"id": 1}

@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 
 from admin_api import schemas
 from admin_api.configuration import Configuration
-from admin_api.repository import AuthRepository
+from admin_api.repositories.users_repository import UsersRepository
 from admin_api.services.base_service import BaseService
 
 
@@ -14,7 +14,7 @@ class AuthService(BaseService):
     pwd_context = CryptContext(schemes=["bcrypt"])
     
     def __init__(self, database: connection):
-        self.repository = AuthRepository(database)
+        self.repository = UsersRepository(database)
     
     def register(self, data: schemas.UserCreate) -> schemas.User:
         found = self.repository.get_user(email=data.email)
@@ -25,10 +25,8 @@ class AuthService(BaseService):
                 detail="Username already registered"
             )
         
-        user_id = self.repository.create_user(
-            name=data.name,
-            email=data.email,
-            password=self.pwd_context.hash(data.password))
+        data.password = self.pwd_context.hash(data.password)
+        user_id = self.repository.create_user(data)
 
         return self.repository.get_user(id=user_id)
 
