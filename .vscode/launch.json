@@ -5,12 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Admin API",
+            "name": "Run Admin API - Tables",
             "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
             "args": [
                 "admin_api:app",
+                "--reload"
+            ],
+            "env": {
+                "SECRET_KEY": "6f87f471ac3beba896e0895073f80646236505ba29175e20547ef9981c734b34",
+                "ALGORITHM": "HS256",
+                "ACCESS_TOKEN_EXPIRE_MINUTES": "30",
+            }
+        },
+        {
+            "name": "Run Admin API - Auth",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "src.main:app",
                 "--reload"
             ],
             "env": {

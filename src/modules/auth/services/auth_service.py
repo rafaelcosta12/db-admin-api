@@ -1,22 +1,16 @@
-from typing import Annotated
-from fastapi.security import SecurityScopes
 import jwt
 from datetime import datetime, timedelta, timezone
-from fastapi import Depends, HTTPException
-from psycopg2.extensions import connection
+from fastapi import HTTPException
 from passlib.context import CryptContext
 
-from admin_api import schemas
-from admin_api.configuration import Configuration
-from admin_api.repositories.users_repository import UsersRepository
-from admin_api.services.base_service import BaseService
+from .. import models
+from ....core.configuration import Configuration
+from ..repositories.user_repository import UsersRepository
 
-
-class AuthService(BaseService):
-    pwd_context = CryptContext(schemes=["bcrypt"])
-    
-    def __init__(self, database: connection):
-        self.repository = UsersRepository(database)
+class AuthService:
+    def __init__(self, repository: UsersRepository):
+        self.pwd_context = CryptContext(schemes=["bcrypt"])
+        self.repository = repository
     
     def decode_token(self, token: str):
         try:
@@ -30,8 +24,8 @@ class AuthService(BaseService):
         except jwt.PyJWTError:
             return None
     
-    def register(self, data: schemas.UserCreate) -> schemas.User:
-        found = self.repository.get_user(email=data.email)
+    def register(self, data: models.UserCreate) -> models.User:
+        found = self.repository.find(email=data.email)
     
         if found:
             raise HTTPException(
@@ -40,12 +34,12 @@ class AuthService(BaseService):
             )
         
         data.password = self.pwd_context.hash(data.password)
-        user_id = self.repository.create_user(data)
+        user_id = self.repository.insert(data)
 
-        return self.repository.get_user(id=user_id)
+        return self.repository.find(id=user_id)
 
-    def login(self, data: schemas.Login):
-        user = self.repository.get_user(email=data.email)
+    async def login(self, data: models.Login):
+        user = await self.repository.find(email=data.email)
     
         if not user or not self.pwd_context.verify(data.password, user.password):
             raise HTTPException(status_code=400, detail="incorrect username or password")
@@ -62,4 +56,4 @@ class AuthService(BaseService):
             algorithm=Configuration.algorithm,
         )
 
-        return schemas.LoginOutput(access_token=encoded_jwt)
+        return models.LoginOutput(access_token=encoded_jwt)
