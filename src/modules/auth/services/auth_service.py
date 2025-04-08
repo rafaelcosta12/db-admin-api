@@ -15,8 +15,11 @@ class AuthService:
     async def new_user(self, data: models.UserCreate) -> models.User:
         await self._check_user_already_exists(data)
         data.password = self.pwd_context.hash(data.password)
-        user_id = self.repository.insert(data)
-        return self.repository.find(id=user_id)
+        user_id = await self.repository.insert(data)
+        user = await self.repository.find(id=user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
 
     async def _check_user_already_exists(self, data):
         found = await self.repository.find(email=data.email)
@@ -25,7 +28,7 @@ class AuthService:
 
     async def login(self, data: models.Login):
         user = await self.repository.find(email=data.email)
-    
+
         if not user or not self.pwd_context.verify(data.password, user.password):
             raise HTTPException(status_code=400, detail="Incorrect username or password")
         

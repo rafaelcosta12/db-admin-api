@@ -1,0 +1,9 @@
+[MASTER]
+disable=
+    C0111,  # Docstring missing
+    R0903,  # Too few public methods
+    W1203,  # logging-fstring-interpolation
+enable=
+    useless-suppression,
+    missing-docstring,
+    invalid-name

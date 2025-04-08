@@ -1,5 +1,6 @@
 import os
 from typing import AsyncGenerator
+from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncSession,
@@ -24,6 +25,7 @@ def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSessi
         bind=engine,
         class_=AsyncSession,
         autoflush=False,
+        autocommit=False,
         expire_on_commit=False,  # Importante para evitar comportamentos inesperados
     )
 
@@ -44,16 +46,15 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
         finally:
             await session.close()  # Garante o fechamento
 
-# 5. Funções utilitárias para gerenciamento de conexões
-async def close_db_connections():
-    """Fecha todas as conexões ao encerrar a aplicação"""
-    await engine.dispose()
-
-async def check_db_connection() -> bool:
-    """Verifica se a conexão com o banco está ativa"""
-    try:
-        async with engine.connect() as conn:
-            await conn.execute("SELECT 1")
-        return True
-    except Exception:
-        return False
+# 5. Context Manager Assíncrono (opcional)
+@asynccontextmanager
+async def get_db_ctx() -> AsyncGenerator[AsyncSession]:
+    async with SessionLocal() as session:
+        try:
+            yield session
+            await session.commit()  # Commit automático se não houver erros
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()  # Garante o fechamento
