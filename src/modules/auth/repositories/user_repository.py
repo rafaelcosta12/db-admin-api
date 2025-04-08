@@ -7,12 +7,12 @@ from ....db.tables import users_table
 from ....db.base_repository import BaseRepository
 
 class UsersRepository(BaseRepository):
-    def __init__(self, database: AsyncSession):
-        self.database = database
+    def __init__(self, conn: AsyncSession):
+        super().__init__(conn)
 
     async def list(self) -> List[models.User]:
         stmt = select(users_table)
-        result = await self.database.execute(stmt)
+        result = await self.connection.execute(stmt)
         return [models.User(i._mapping) for i in result.fetchall()]
     
     async def find(self, id: int = None, email: str = None) -> models.User | None:
@@ -24,26 +24,26 @@ class UsersRepository(BaseRepository):
         if email:
             stmt = stmt.where(users_table.c.email == email)
         
-        result = (await self.database.execute(stmt)).fetchone()
+        result = (await self.connection.execute(stmt)).fetchone()
         
         if result:
             return models.User(result._mapping)
 
     async def insert(self, data: models.UserCreate) -> int:
-        with self.database.begin():
+        with self.connection.begin():
             stmt = (
                 insert(users_table)
                     .values(**data.model_dump())
                     .returning(users_table.c.id)
             )
-            result = self.database.execute(stmt)
+            result = self.connection.execute(stmt)
         return result.scalar()
 
     async def update(self, user_id: int, data: models.UserUpdate) -> None:
-        async with self.database.begin():
+        async with self.connection.begin():
             stmt = (
                 users_table.update()
                     .where(users_table.c.id == user_id)
                     .values(**data.model_dump(exclude_unset=True))
             )
-            await self.database.execute(stmt)
+            await self.connection.execute(stmt)

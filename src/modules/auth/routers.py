@@ -19,8 +19,8 @@ async def login(
     return await service.login(data)
 
 @router.post("/register")
-async def register(
+async def register_new_user(
     input: models.UserCreate,
     service: AuthService = Depends(get_auth_service),
 ) -> models.User:
-    return await service.register(input)
+    return await service.new_user(input)

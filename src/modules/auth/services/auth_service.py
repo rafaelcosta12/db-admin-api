@@ -12,38 +12,26 @@ class AuthService:
         self.pwd_context = CryptContext(schemes=["bcrypt"])
         self.repository = repository
     
-    def decode_token(self, token: str):
-        try:
-            payload = jwt.decode(
-                jwt=token,
-                key=Configuration.secret_key,
-                algorithms=[Configuration.algorithm]
-            )
-            username = payload.get("sub")
-            return payload if username else None
-        except jwt.PyJWTError:
-            return None
-    
-    def register(self, data: models.UserCreate) -> models.User:
-        found = self.repository.find(email=data.email)
-    
-        if found:
-            raise HTTPException(
-                status_code=400,
-                detail="Username already registered"
-            )
-        
+    async def new_user(self, data: models.UserCreate) -> models.User:
+        await self._check_user_already_exists(data)
         data.password = self.pwd_context.hash(data.password)
         user_id = self.repository.insert(data)
-
         return self.repository.find(id=user_id)
+
+    async def _check_user_already_exists(self, data):
+        found = await self.repository.find(email=data.email)
+        if found:
+            raise HTTPException(status_code=400, detail="Username already registered")
 
     async def login(self, data: models.Login):
         user = await self.repository.find(email=data.email)
     
         if not user or not self.pwd_context.verify(data.password, user.password):
-            raise HTTPException(status_code=400, detail="incorrect username or password")
+            raise HTTPException(status_code=400, detail="Incorrect username or password")
         
+        if not user.is_active:
+            raise HTTPException(status_code=400, detail="Inactive user")
+
         expire = datetime.now(timezone.utc) + timedelta(minutes=Configuration.token_expiration_minutes)
         
         encoded_jwt = jwt.encode(
