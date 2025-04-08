@@ -47,4 +47,4 @@ class AuthService:
             algorithm=Configuration.algorithm,
         )
 
-        return models.LoginOutput(access_token=encoded_jwt)
+        return models.LoginOutput(access_token=encoded_jwt, user=user)

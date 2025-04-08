@@ -4,6 +4,7 @@ from . import models
 from .services.auth_service import AuthService
 from .repositories.user_repository import UsersRepository
 from ...db.session import get_db
+from ...core.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -24,3 +25,9 @@ async def register_new_user(
     service: AuthService = Depends(get_auth_service),
 ) -> models.User:
     return await service.new_user(input)
+
+@router.get("/me", response_model=models.User)
+async def current_user(
+    user: models.User = Depends(get_current_user),
+) -> models.User:
+    return user

@@ -5,7 +5,8 @@ import jwt
 
 from .configuration import oauth2_scheme, Configuration
 from ..modules.auth.repositories.user_repository import UsersRepository
-from ..db.session import get_db, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncConnection
+from ..db.session import get_db
 
 def decode_token(token: str):
     try:
@@ -21,7 +22,7 @@ def decode_token(token: str):
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
-    db: Annotated[AsyncSession, Depends(get_db)]
+    conn: Annotated[AsyncConnection, Depends(get_db)]
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -36,7 +37,7 @@ async def get_current_user(
         token_data = {"email": email}
     except jwt.InvalidTokenError:
         raise credentials_exception
-    user = UsersRepository(db).find(email=token_data["email"])
+    user = await UsersRepository(conn).find(email=token_data["email"])
     if user is None:
         raise credentials_exception
     return user

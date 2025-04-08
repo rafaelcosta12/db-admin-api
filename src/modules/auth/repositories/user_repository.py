@@ -16,7 +16,7 @@ class UsersRepository(BaseRepository):
         result = await self.connection.execute(stmt)
         return [models.User(**i._mapping) for i in result.fetchall()]
     
-    async def find(self, id: Optional[int] = None, email: Optional[str] = None) -> models.User | None:
+    async def find(self, id: Optional[int] = None, email: Optional[str] = None) -> models.UserPassword | None:
         stmt = select(users_table)
         
         if id:
@@ -28,7 +28,7 @@ class UsersRepository(BaseRepository):
         result = (await self.connection.execute(stmt)).fetchone()
         
         if result:
-            return models.User(**result._mapping)
+            return models.UserPassword(**result._mapping)
         
         return None
 
