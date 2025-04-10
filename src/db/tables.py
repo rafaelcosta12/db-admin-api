@@ -16,6 +16,6 @@ users_table = Table(
     Column("password", String(256), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, default=now),
     Column("updated_at", DateTime(timezone=True), nullable=False, default=now, onupdate=now),
-    Column("is_admin", Boolean, nullable=False),
+    Column("is_admin", Boolean, nullable=False, default=False),
     Column("is_active", Boolean, nullable=False, default=True),
 )

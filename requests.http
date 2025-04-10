@@ -1,0 +1,57 @@
+@hostname = localhost
+@port = 8000
+@host = {{hostname}}:{{port}}
+@baseUrl = http://{{host}}
+@contentType = application/json
+@createdAt = {{$datetime iso8601}}
+@modifiedBy = {{$processEnv USERNAME}}
+
+###
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@admin.com",
+    "password": "admin"
+}
+
+###
+@token = {{login.response.body.access_token}}
+# @name getCurrentUser
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+###
+# @name createUser
+POST {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+{
+    "name": "Test User",
+    "email": "teste@test.com",
+    "password": "123456"
+}
+
+###
+# @name updateUser
+PUT {{baseUrl}}/users/8
+Authorization: Bearer {{token}}
+
+{
+    "name": "Test User 2",
+    "email": "teste@test.com",
+    "password": "123456",
+    "is_active": true,
+    "is_admin": false
+}
+
+###
+# @name deleteUser
+DELETE {{baseUrl}}/users/7
+Authorization: Bearer {{token}}
+
+###
+# @name listUsers
+GET {{baseUrl}}/users?limit=10&offset=0&order_by=updated_at&order=asc
+Authorization: Bearer {{token}}

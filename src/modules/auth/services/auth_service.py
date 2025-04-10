@@ -2,6 +2,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from passlib.context import CryptContext
+from typing import List
 
 from .. import models
 from ....core.configuration import Configuration
@@ -11,6 +12,9 @@ class AuthService:
     def __init__(self, repository: UsersRepository):
         self.pwd_context = CryptContext(schemes=["bcrypt"])
         self.repository = repository
+    
+    async def list_users(self, filter: models.UserSearchFilter) -> models.PaginationSearchResult[models.User]:
+        return await self.repository.list_paged(filter)
     
     async def new_user(self, data: models.UserCreate) -> models.User:
         await self._check_user_already_exists(data)
@@ -48,3 +52,19 @@ class AuthService:
         )
 
         return models.LoginOutput(access_token=encoded_jwt, user=user)
+
+    async def update_user(self, user_id: int, data: models.UserUpdate) -> models.User:
+        user = await self.repository.find(id=user_id)
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return await self.repository.update(user_id, data)
+
+    async def delete_user(self, user_id: int) -> None:
+        user = await self.repository.find(id=user_id)
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        await self.repository.delete(user_id)
