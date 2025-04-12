@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from typing import List
+import uuid
 
 from .. import models
 from ....core.configuration import Configuration
@@ -18,7 +19,7 @@ class AuthService:
     
     async def new_user(self, data: models.UserCreate) -> models.User:
         await self._check_user_already_exists(data)
-        data.password = self.pwd_context.hash(data.password)
+        data.password = self.pwd_context.hash(str(uuid.uuid4()))
         user_id = await self.repository.insert(data)
         user = await self.repository.find(id=user_id)
         if not user:
