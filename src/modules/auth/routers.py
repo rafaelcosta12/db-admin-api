@@ -34,6 +34,13 @@ async def list_users(
 ) -> models.PaginationSearchResult[models.User]:
     return await service.list_users(filter)
 
+@users_router.get("/{user_id}")
+async def find_users(
+    user_id: int,
+    service: AuthService = Depends(get_auth_service),
+) -> models.User:
+    return await service.find_user(user_id)
+
 @users_router.post("", dependencies=[Depends(should_be_admin)])
 async def new_user(
     input: models.UserCreate,

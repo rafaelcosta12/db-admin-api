@@ -17,6 +17,12 @@ class AuthService:
     async def list_users(self, filter: models.UserSearchFilter) -> models.PaginationSearchResult[models.User]:
         return await self.repository.list_paged(filter)
     
+    async def find_user(self, user_id: int) -> models.User:
+        user = await self.repository.find(id=user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    
     async def new_user(self, data: models.UserCreate) -> models.User:
         await self._check_user_already_exists(data)
         data.password = self.pwd_context.hash(str(uuid.uuid4()))
