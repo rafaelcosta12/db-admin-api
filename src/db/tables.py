@@ -18,4 +18,5 @@ users_table = Table(
     Column("updated_at", DateTime(timezone=True), nullable=False, default=now, onupdate=now),
     Column("is_admin", Boolean, nullable=False, default=False),
     Column("is_active", Boolean, nullable=False, default=True),
+    Column("profile_img", String, nullable=True),
 )

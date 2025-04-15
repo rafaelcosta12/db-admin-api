@@ -9,6 +9,7 @@ class UserBase(BaseModel):
     email: str
     is_admin: Optional[bool] = None
     is_active: Optional[bool] = None
+    profile_img: Optional[str] = None
 
 class UserUpdate(UserBase):
     pass

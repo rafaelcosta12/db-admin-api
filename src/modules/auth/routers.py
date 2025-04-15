@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, Query
-from typing import List, Annotated
+from fastapi import APIRouter, Depends, File, Query
+from typing import Annotated
 
 from . import models
 from .services.auth_service import AuthService
 from .repositories.user_repository import UsersRepository
 from ...db.session import get_db
 from ...core.dependencies import get_current_user, should_be_logged_in, should_be_admin
+import httpx
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 users_router = APIRouter(prefix="/users", tags=["Users"], dependencies=[Depends(should_be_logged_in)])
@@ -62,3 +63,16 @@ async def delete_user(
     service: AuthService = Depends(get_auth_service),
 ):
     await service.delete_user(user_id)
+
+@users_router.post("/{user_id}/image", dependencies=[Depends(should_be_admin)])
+async def update_image(
+    user_id: int,
+    file: Annotated[bytes, File()],
+    service: AuthService = Depends(get_auth_service),
+):
+    # TODO: save file to aws s3 and return the url
+    async with httpx.AsyncClient() as client:
+        r = await client.get("https://picsum.photos/200")
+        assert r.status_code == 302
+        image_url = r.headers["location"]
+    return await service.update_user_profile_img(user_id, image_url)
