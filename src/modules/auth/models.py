@@ -49,5 +49,6 @@ class UserSearchFilter(BasePaginationSearchFilter):
     order: Literal["asc", "desc"] = "desc"
     name: Optional[str] = None
     email: Optional[str] = None
+    text: Optional[str] = None
     is_admin: Optional[bool] = None
     is_active: Optional[bool] = None

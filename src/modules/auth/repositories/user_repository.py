@@ -40,7 +40,12 @@ class UsersRepository(BaseRepository):
             page=filter.offset // filter.limit + 1 if filter.limit else 1,
         )
     
-    def _filter(self, stmt: Select, filter: models.UserSearchFilter) -> Select:        
+    def _filter(self, stmt: Select, filter: models.UserSearchFilter) -> Select:
+        if filter.text:
+            stmt = stmt.where(
+                (users_table.c.name.ilike(f"%{filter.text}%")) |
+                (users_table.c.email.ilike(f"%{filter.text}%"))
+            )
         if filter.name:
             stmt = stmt.where(users_table.c.name.ilike(f"%{filter.name}%"))
         if filter.email:
