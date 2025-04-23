@@ -43,12 +43,31 @@ class PaginationSearchResult(BaseModel, Generic[T]):
 class BasePaginationSearchFilter(BaseModel):
     limit: int = Field(100, gt=0, le=100)
     offset: int = Field(0, ge=0)
+    order: Literal["asc", "desc"] = "desc"
 
 class UserSearchFilter(BasePaginationSearchFilter):
     order_by: Literal["created_at", "updated_at"] = "created_at"
-    order: Literal["asc", "desc"] = "desc"
     name: Optional[str] = None
     email: Optional[str] = None
     text: Optional[str] = None
     is_admin: Optional[bool] = None
     is_active: Optional[bool] = None
+
+class UserGroupBase(BaseModel):
+    name: str
+
+class UserGroupCreate(UserGroupBase):
+    pass
+
+class UserGroupUpdate(UserGroupBase):
+    pass
+
+class UserGroup(UserGroupBase):
+    id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+class UserGroupSearchFilter(BasePaginationSearchFilter):
+    order_by: Literal["created_at", "updated_at"] = "created_at"
+    name: Optional[str] = None
+    text: Optional[str] = None

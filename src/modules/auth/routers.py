@@ -3,17 +3,24 @@ from typing import Annotated
 
 from . import models
 from .services.auth_service import AuthService
+from .services.user_group_service import UserGroupService
 from .repositories.user_repository import UsersRepository
+from .repositories.user_group_repository import UsersGroupRepository
 from ...db.session import get_db
 from ...core.dependencies import get_current_user, should_be_logged_in, should_be_admin
 import httpx
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 users_router = APIRouter(prefix="/users", tags=["Users"], dependencies=[Depends(should_be_logged_in)])
+users_groups_router = APIRouter(prefix="/user_groups", tags=["User Groups"], dependencies=[Depends(should_be_admin)])
 
 def get_auth_service(conn=Depends(get_db)):
     repo = UsersRepository(conn)
     return AuthService(repo)
+
+def get_user_group_service(conn=Depends(get_db)):
+    repo = UsersGroupRepository(conn)
+    return UserGroupService(repo)
 
 @auth_router.post("/login")
 async def login(
@@ -76,3 +83,39 @@ async def update_image(
         assert r.status_code == 302
         image_url = r.headers["location"]
     return await service.update_user_profile_img(user_id, image_url)
+
+@users_groups_router.get("")
+async def list_user_groups(
+    filter: Annotated[models.UserGroupSearchFilter, Query()],
+    service: UserGroupService = Depends(get_user_group_service),
+) -> models.PaginationSearchResult[models.UserGroup]:
+    return await service.list_user_groups(filter)
+
+@users_groups_router.get("/{user_group_id}")
+async def find_user_group(
+    user_group_id: int,
+    service: UserGroupService = Depends(get_user_group_service),
+) -> models.UserGroup:
+    return await service.find_user_group(user_group_id)
+
+@users_groups_router.post("", dependencies=[Depends(should_be_admin)])
+async def new_user_group(
+    input: models.UserGroupCreate,
+    service: UserGroupService = Depends(get_user_group_service),
+) -> models.UserGroup:
+    return await service.new_user_group(input)
+
+@users_groups_router.put("/{user_group_id}", dependencies=[Depends(should_be_admin)])
+async def update_user_group(
+    user_group_id: int,
+    input: models.UserGroupUpdate,
+    service: UserGroupService = Depends(get_user_group_service),
+) -> models.UserGroup:
+    return await service.update_user_group(user_group_id, input)
+
+@users_groups_router.delete("/{user_group_id}", dependencies=[Depends(should_be_admin)], status_code=204)
+async def delete_user_group(
+    user_group_id: int,
+    service: UserGroupService = Depends(get_user_group_service),
+):
+    await service.delete_user_group(user_group_id)

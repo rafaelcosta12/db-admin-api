@@ -14,7 +14,7 @@ class AuthService:
         self.repository = repository
     
     async def list_users(self, filter: models.UserSearchFilter) -> models.PaginationSearchResult[models.User]:
-        return await self.repository.list_paged(filter)
+        return await self.repository.list_by_filter(filter)
     
     async def find_user(self, user_id: int) -> models.User:
         user = await self.repository.find(id=user_id)

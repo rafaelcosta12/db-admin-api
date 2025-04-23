@@ -16,8 +16,8 @@ class UsersRepository(BaseRepository):
     def __init__(self, conn: AsyncConnection):
         super().__init__(conn)
 
-    async def list_paged(self, filter: models.UserSearchFilter) -> models.PaginationSearchResult[models.User]:
-        stmt = self._filter(select(users_table), filter)
+    async def list_by_filter(self, filter: models.UserSearchFilter) -> models.PaginationSearchResult[models.User]:
+        stmt = self._apply_filters(select(users_table), filter)
 
         if filter.limit:
             stmt = stmt.limit(filter.limit)
@@ -31,7 +31,7 @@ class UsersRepository(BaseRepository):
 
         results = await self.connection.execute(stmt)
         
-        stmt = self._filter(select(func.count(users_table.c.id)), filter)
+        stmt = self._apply_filters(select(func.count(users_table.c.id)), filter)
         count = await self.connection.execute(stmt)
 
         return models.PaginationSearchResult(
@@ -40,7 +40,7 @@ class UsersRepository(BaseRepository):
             page=filter.offset // filter.limit + 1 if filter.limit else 1,
         )
     
-    def _filter(self, stmt: Select, filter: models.UserSearchFilter) -> Select:
+    def _apply_filters(self, stmt: Select, filter: models.UserSearchFilter) -> Select:
         if filter.text:
             stmt = stmt.where(
                 (users_table.c.name.ilike(f"%{filter.text}%")) |

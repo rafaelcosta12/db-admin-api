@@ -55,3 +55,31 @@ Authorization: Bearer {{token}}
 # @name listUsers
 GET {{baseUrl}}/users?limit=10&offset=0&order_by=updated_at&order=asc
 Authorization: Bearer {{token}}
+
+###
+# @name listUserGroups
+GET {{baseUrl}}/user_groups?limit=10&offset=0&order_by=updated_at&order=asc
+Authorization: Bearer {{token}}
+
+###
+# @name createUserGroup
+POST {{baseUrl}}/user_groups
+Authorization: Bearer {{token}}
+
+{
+    "name": "Test User Group"
+}
+
+###
+# @name updateUserGroup
+PUT {{baseUrl}}/user_groups/9
+Authorization: Bearer {{token}}
+
+{
+    "name": "Test User Group 2"
+}
+
+###
+# @name deleteUserGroup
+DELETE {{baseUrl}}/user_groups/9
+Authorization: Bearer {{token}}
