@@ -71,3 +71,7 @@ class UserGroupSearchFilter(BasePaginationSearchFilter):
     order_by: Literal["created_at", "updated_at"] = "created_at"
     name: Optional[str] = None
     text: Optional[str] = None
+
+class UserGroupMember(BaseModel):
+    user_id: int
+    group_id: int

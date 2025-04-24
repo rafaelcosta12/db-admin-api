@@ -83,3 +83,26 @@ Authorization: Bearer {{token}}
 # @name deleteUserGroup
 DELETE {{baseUrl}}/user_groups/9
 Authorization: Bearer {{token}}
+
+###
+# @name listUserGroupUsers
+GET {{baseUrl}}/user_groups/1/members
+Authorization: Bearer {{token}}
+
+###
+# @name addUserToUserGroup
+POST {{baseUrl}}/user_groups/1/members
+Authorization: Bearer {{token}}
+
+{
+    "user_id": 13
+}
+
+###
+# @name removeUserFromUserGroup
+DELETE {{baseUrl}}/user_groups/1/members
+Authorization: Bearer {{token}}
+
+{
+    "user_id": 13
+}

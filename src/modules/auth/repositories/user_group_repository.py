@@ -3,12 +3,16 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 from sqlalchemy.exc import IntegrityError
 
 from ....db.base_repository import BaseRepository
-from ....db.tables import user_groups_table
+from ....db.tables import user_groups_table, user_group_membership_table, users_table
 from .. import models
 
 
 class GroupExistsError(Exception):
     """Exception raised when a user group with the same name already exists."""
+    pass
+
+class OperationFailedError(Exception):
+    """Exception raised when an operation fails."""
     pass
 
 
@@ -96,4 +100,29 @@ class UsersGroupRepository(BaseRepository):
         result = await self.connection.execute(stmt)
         return result.rowcount > 0
 
+    async def add_user_to_group(self, group_id: int, user_id: int) -> bool:
+        try:
+            stmt = (
+                insert(user_group_membership_table)
+                    .values(user_id=user_id, group_id=group_id)
+            )
+            await self.connection.execute(stmt)
+            return True
+        except IntegrityError as e:
+            raise OperationFailedError(f"Failed to add user {user_id} to group {group_id}") from e
 
+    async def remove_user_from_group(self, group_id: int, user_id: int):
+        stmt = (
+            user_group_membership_table.delete()
+                .where(user_group_membership_table.c.group_id == group_id)
+                .where(user_group_membership_table.c.user_id == user_id)
+        )
+        await self.connection.execute(stmt)
+    
+    async def list_users_in_group(self, group_id: int) -> list[models.User]:
+        stmt = (
+            select(user_group_membership_table.join(users_table))
+                .where(user_group_membership_table.c.group_id == group_id)
+        )
+        result = await self.connection.execute(stmt)
+        return [models.User(**i._mapping) for i in result.fetchall()]

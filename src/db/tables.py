@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Boolean, ForeignKey, UniqueConstraint
 from datetime import datetime, timezone
 
 metadata_obj = MetaData()
@@ -37,4 +37,5 @@ user_group_membership_table = Table(
     Column("group_id", Integer, ForeignKey("user_groups.id"), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, default=now),
     Column("updated_at", DateTime(timezone=True), nullable=False, default=now, onupdate=now),
+    UniqueConstraint("user_id", "group_id", name="uq_user_group_membership")
 )

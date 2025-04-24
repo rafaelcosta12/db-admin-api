@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 from .. import models
-from ..repositories.user_group_repository import UsersGroupRepository, GroupExistsError
+from ..repositories.user_group_repository import UsersGroupRepository, GroupExistsError, OperationFailedError
 
 class UserGroupService:
     def __init__(self, repository: UsersGroupRepository):
@@ -44,3 +44,21 @@ class UserGroupService:
         if not user_group:
             raise HTTPException(status_code=404, detail="User group not found")
         return user_group
+    
+    async def add_user_to_group(self, user_id: int, group_id: int) -> models.UserGroupMember:
+        try:
+            if not await self.repository.add_user_to_group(group_id, user_id):
+                raise HTTPException(status_code=500, detail="Failed to add user to group")
+            return models.UserGroupMember(user_id=user_id, group_id=group_id)
+        except OperationFailedError as err:
+            raise HTTPException(status_code=400, detail=str(err))
+
+    async def list_user_group_members(self, user_group_id: int) -> list[models.User]:
+        users = await self.repository.list_users_in_group(user_group_id)
+        return users
+
+    async def remove_user_from_group(self, user_id: int, group_id: int):
+        try:
+            await self.repository.remove_user_from_group(group_id, user_id)
+        except OperationFailedError as err:
+            raise HTTPException(status_code=400, detail=str(err))

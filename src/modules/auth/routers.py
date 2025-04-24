@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, File, Query
-from typing import Annotated
+from fastapi import APIRouter, Depends, File, Query, Body
+from typing import Annotated, List
 
 from . import models
 from .services.auth_service import AuthService
@@ -119,3 +119,26 @@ async def delete_user_group(
     service: UserGroupService = Depends(get_user_group_service),
 ):
     await service.delete_user_group(user_group_id)
+
+@users_groups_router.get("/{user_group_id}/members", dependencies=[Depends(should_be_admin)])
+async def list_group_members(
+    user_group_id: int,
+    service: UserGroupService = Depends(get_user_group_service),
+) -> List[models.User]:
+    return await service.list_user_group_members(user_group_id)
+
+@users_groups_router.post("/{user_group_id}/members", dependencies=[Depends(should_be_admin)])
+async def add_member_to_group(
+    user_group_id: int,
+    user_id: Annotated[int, Body(embed=True)],
+    service: UserGroupService = Depends(get_user_group_service),
+) -> models.UserGroupMember:
+    return await service.add_user_to_group(user_id, user_group_id)
+
+@users_groups_router.delete("/{user_group_id}/members", dependencies=[Depends(should_be_admin)], status_code=204)
+async def remove_member_from_group(
+    user_group_id: int,
+    user_id: Annotated[int, Body(embed=True)],
+    service: UserGroupService = Depends(get_user_group_service),
+):
+    await service.remove_user_from_group(user_id, user_group_id)
