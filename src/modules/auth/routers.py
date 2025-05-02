@@ -12,7 +12,7 @@ import httpx
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 users_router = APIRouter(prefix="/users", tags=["Users"], dependencies=[Depends(should_be_logged_in)])
-users_groups_router = APIRouter(prefix="/user_groups", tags=["User Groups"], dependencies=[Depends(should_be_admin)])
+users_groups_router = APIRouter(prefix="/user-groups", tags=["User Groups"], dependencies=[Depends(should_be_admin)])
 
 def get_auth_service(conn=Depends(get_db)):
     repo = UsersRepository(conn)
@@ -88,7 +88,7 @@ async def update_image(
 async def list_user_groups(
     filter: Annotated[models.UserGroupSearchFilter, Query()],
     service: UserGroupService = Depends(get_user_group_service),
-) -> models.PaginationSearchResult[models.UserGroup]:
+) -> models.PaginationSearchResult[models.UserGroupWithDetails]:
     return await service.list_user_groups(filter)
 
 @users_groups_router.get("/{user_group_id}")

@@ -7,8 +7,20 @@ class UserGroupService:
     def __init__(self, repository: UsersGroupRepository):
         self.repository = repository
 
-    async def list_user_groups(self, filter: models.UserGroupSearchFilter) -> models.PaginationSearchResult[models.UserGroup]:
-        return await self.repository.list_by_filter(filter)
+    async def list_user_groups(self, filter: models.UserGroupSearchFilter) -> models.PaginationSearchResult[models.UserGroupWithDetails]:
+        user_groups_list = await self.repository.list_by_filter(filter)
+        user_count_by_group = await self.repository.list_user_counts_by_group([group.id for group in user_groups_list.items])
+        group_id_to_user_count = {
+            group.group_id: group.user_count for group in user_count_by_group
+        }
+        return models.PaginationSearchResult[models.UserGroupWithDetails](
+            total=user_groups_list.total,
+            page=user_groups_list.page,
+            items=[
+                models.UserGroupWithDetails(user_count=group_id_to_user_count.get(i.id, 0), **i.model_dump())
+                for i in user_groups_list.items
+            ]
+        )
     
     async def find_user_group(self, user_group_id: int) -> models.UserGroup:
         user_group = await self.repository.find(id=user_group_id)

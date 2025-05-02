@@ -67,6 +67,9 @@ class UserGroup(UserGroupBase):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
+class UserGroupWithDetails(UserGroup):
+    user_count: int = 0
+
 class UserGroupSearchFilter(BasePaginationSearchFilter):
     order_by: Literal["created_at", "updated_at"] = "created_at"
     name: Optional[str] = None
@@ -74,4 +77,8 @@ class UserGroupSearchFilter(BasePaginationSearchFilter):
 
 class UserGroupMember(BaseModel):
     user_id: int
+    group_id: int
+
+class UserCountByGroup(BaseModel):
+    user_count: int
     group_id: int

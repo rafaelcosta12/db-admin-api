@@ -53,7 +53,19 @@ class UsersGroupRepository(BaseRepository):
             stmt = stmt.where(user_groups_table.c.name.ilike(f"%{filter.name}%"))
         
         return stmt
-    
+
+    async def list_user_counts_by_group(self, group_ids: list[int]) -> list[models.UserCountByGroup]:
+        stmt = (
+            select(
+                user_group_membership_table.c.group_id,
+                func.count(user_group_membership_table.c.user_id).label("user_count")
+            )
+            .where(user_group_membership_table.c.group_id.in_(group_ids))
+            .group_by(user_group_membership_table.c.group_id)
+        )
+        result = await self.connection.execute(stmt)
+        return [models.UserCountByGroup(**row._mapping) for row in result.fetchall()]
+
     async def create(self, user_group: models.UserGroupCreate) -> int:
         stmt = (
             insert(user_groups_table)

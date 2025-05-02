@@ -58,12 +58,12 @@ Authorization: Bearer {{token}}
 
 ###
 # @name listUserGroups
-GET {{baseUrl}}/user_groups?limit=10&offset=0&order_by=updated_at&order=asc
+GET {{baseUrl}}/user-groups?limit=10&offset=0&order_by=updated_at&order=asc
 Authorization: Bearer {{token}}
 
 ###
 # @name createUserGroup
-POST {{baseUrl}}/user_groups
+POST {{baseUrl}}/user-groups
 Authorization: Bearer {{token}}
 
 {
@@ -72,7 +72,7 @@ Authorization: Bearer {{token}}
 
 ###
 # @name updateUserGroup
-PUT {{baseUrl}}/user_groups/9
+PUT {{baseUrl}}/user-groups/9
 Authorization: Bearer {{token}}
 
 {
@@ -81,17 +81,17 @@ Authorization: Bearer {{token}}
 
 ###
 # @name deleteUserGroup
-DELETE {{baseUrl}}/user_groups/9
+DELETE {{baseUrl}}/user-groups/9
 Authorization: Bearer {{token}}
 
 ###
 # @name listUserGroupUsers
-GET {{baseUrl}}/user_groups/1/members
+GET {{baseUrl}}/user-groups/1/members
 Authorization: Bearer {{token}}
 
 ###
 # @name addUserToUserGroup
-POST {{baseUrl}}/user_groups/1/members
+POST {{baseUrl}}/user-groups/1/members
 Authorization: Bearer {{token}}
 
 {
@@ -100,7 +100,7 @@ Authorization: Bearer {{token}}
 
 ###
 # @name removeUserFromUserGroup
-DELETE {{baseUrl}}/user_groups/1/members
+DELETE {{baseUrl}}/user-groups/1/members
 Authorization: Bearer {{token}}
 
 {
