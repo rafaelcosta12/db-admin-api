@@ -100,9 +100,5 @@ Authorization: Bearer {{token}}
 
 ###
 # @name removeUserFromUserGroup
-DELETE {{baseUrl}}/user-groups/1/members
+DELETE {{baseUrl}}/user-groups/1/members/13
 Authorization: Bearer {{token}}
-
-{
-    "user_id": 13
-}
