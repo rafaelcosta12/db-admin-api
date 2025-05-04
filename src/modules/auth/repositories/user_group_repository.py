@@ -133,7 +133,7 @@ class UsersGroupRepository(BaseRepository):
     
     async def list_users_in_group(self, group_id: int) -> list[models.User]:
         stmt = (
-            select(user_group_membership_table.join(users_table))
+            select(users_table.join(user_group_membership_table))
                 .where(user_group_membership_table.c.group_id == group_id)
         )
         result = await self.connection.execute(stmt)

@@ -135,10 +135,10 @@ async def add_member_to_group(
 ) -> models.UserGroupMember:
     return await service.add_user_to_group(user_id, user_group_id)
 
-@users_groups_router.delete("/{user_group_id}/members", dependencies=[Depends(should_be_admin)], status_code=204)
+@users_groups_router.delete("/{user_group_id}/members/{user_id}", dependencies=[Depends(should_be_admin)], status_code=204)
 async def remove_member_from_group(
     user_group_id: int,
-    user_id: Annotated[int, Body(embed=True)],
+    user_id: int,
     service: UserGroupService = Depends(get_user_group_service),
 ):
     await service.remove_user_from_group(user_id, user_group_id)

@@ -34,7 +34,7 @@ user_group_membership_table = Table(
     metadata_obj,
     Column("id", Integer, primary_key=True),
     Column("user_id", Integer, ForeignKey("users.id"), nullable=False),
-    Column("group_id", Integer, ForeignKey("user_groups.id"), nullable=False),
+    Column("group_id", Integer, ForeignKey("user_groups.id", ondelete="CASCADE"), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, default=now),
     Column("updated_at", DateTime(timezone=True), nullable=False, default=now, onupdate=now),
     UniqueConstraint("user_id", "group_id", name="uq_user_group_membership")
