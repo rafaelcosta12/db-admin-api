@@ -1,5 +1,4 @@
-import os
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
@@ -8,19 +7,14 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker
 )
 
-DSN = os.environ.get("DSN", "postgresql+asyncpg://postgres:postgres@localhost:5432/devstacker")
+dsn_default = "postgresql+asyncpg://postgres:postgres@localhost:5432/devstacker"
 
 # 1. Configuração da Engine Assíncrona
-def create_db_engine() -> AsyncEngine:
-    """Cria a engine de conexão assíncrona com o banco"""
-    return create_async_engine(
-        DSN,  # Ex: "postgresql+asyncpg://user:pass@localhost/db"
-        echo=True,  # Log de queries (True em desenvolvimento)
-    )
+def create_db_engine(dsn: str) -> AsyncEngine:
+    return create_async_engine(dsn, echo=True,)
 
 # 2. Factory de Sessões Assíncronas
-def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    """Cria a factory para gerar sessões de banco"""
+def create_async_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(
         bind=engine,
         class_=AsyncSession,
@@ -30,13 +24,14 @@ def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSessi
     )
 
 # 3. Instâncias Globais (únicas por aplicação)
-engine = create_db_engine()
-SessionLocal = create_session_factory(engine)
+_sessions = {
+    "main": create_async_session_factory(create_db_engine(dsn_default)),
+    "dummy": create_async_session_factory(create_db_engine("postgresql+asyncpg://postgres:postgres@localhost:5432/dummy_application")),
+}
 
 # 4. Dependência para injeção em rotas FastAPI
-async def get_db() -> AsyncGenerator[AsyncSession]:
-    """Gerador de sessões para injeção de dependência"""
-    async with SessionLocal() as session:
+async def get_db(name: Optional[str] = None) -> AsyncGenerator[AsyncSession]:
+    async with _sessions[name or "main"]() as session:
         try:
             yield session
             await session.commit()  # Commit automático se não houver erros
@@ -48,8 +43,8 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
 
 # 5. Context Manager Assíncrono (opcional)
 @asynccontextmanager
-async def get_db_ctx() -> AsyncGenerator[AsyncSession]:
-    async with SessionLocal() as session:
+async def get_db_ctx(name: Optional[str] = None) -> AsyncGenerator[AsyncSession]:
+    async with _sessions[name or "main"]() as session:
         try:
             yield session
             await session.commit()  # Commit automático se não houver erros
