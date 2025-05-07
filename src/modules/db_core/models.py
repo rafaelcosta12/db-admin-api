@@ -13,6 +13,9 @@ class ColumnBase(BaseModel):
 class ColumnCreate(ColumnBase):
     pass
 
+class ColumnUpdate(ColumnBase):
+    pass
+
 class Column(ColumnBase):
     id: int
 
@@ -22,6 +25,9 @@ class TableBase(BaseModel):
     table_schema_id: int
 
 class TableCreate(TableBase):
+    pass
+
+class TableUpdate(TableBase):
     pass
 
 class Table(TableBase):

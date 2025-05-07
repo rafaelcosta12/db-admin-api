@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, MetaData, inspect
 
 from src.modules.db_core import models
 from src.modules.db_core.repositories import SchemasRepository, TableRepository, TableColumnRepository
+from src.modules.db_core.service import DbCoreService
 from src.db.session import get_db_ctx
 
 def get_data():
@@ -43,7 +44,7 @@ def get_tables(schema: models.Schema):
         tables.append(models.TableCreate(
             name=table_name,
             table_schema_id=schema.id,
-            comment=f"Table {table_name} automatically created",
+            comment="Automatically created",
         ))
     
     return tables
@@ -66,22 +67,24 @@ def get_columns(schema: models.Schema, table: models.Table):
     return columns
 
 async def main():
-    schemas = get_schemas()
     async with get_db_ctx() as session:
         schemas_repository = SchemasRepository(session)
         tables_repository = TableRepository(session)
         column_repository = TableColumnRepository(session)
+        service = DbCoreService(schemas_repository, tables_repository, column_repository)
+        
+        pending_schemas = get_schemas()
+        updated_schemas = await service.update_schemas(pending_schemas)
+        print(f"Updated {len(updated_schemas)} schemas")
 
-        for schema in schemas:
-            db_schema = await schemas_repository.create(schema)
-            tables = get_tables(db_schema)
+        for schema in updated_schemas:
+            pending_tables = get_tables(schema)
+            updated_tables = await service.update_tables(pending_tables)
+            print(f"Schema {schema.name} updated with {len(updated_tables)} tables")
 
-            for table in tables:
-                db_table = await tables_repository.create(table)
-                print(f"Table {table.name} created in schema {db_schema.name}")
-
-                for column in get_columns(db_schema, db_table):
-                    await column_repository.create(column)
-                    print(f"Column {column.name} created in table {table.name}")
+            for table in updated_tables:
+                pending_columns = get_columns(schema, table)
+                updated_columns = await service.update_columns(pending_columns)
+                print(f"Table {table.name} updated with {len(updated_columns)} columns")
 
 asyncio.run(main())

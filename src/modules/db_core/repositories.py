@@ -16,28 +16,16 @@ class SchemasRepository(BaseRepository):
         schema_id = result.scalar_one()
         return models.Schema(**data.dict(), id=schema_id)
     
-    async def update(self, schema_id: int, data: models.SchemaUpdate) -> None:
+    async def update(self, schema_id: int, data: models.SchemaUpdate) -> models.Schema:
         stmt = (
             table_schemas_table.update()
             .where(table_schemas_table.c.id == schema_id)
             .values(**data.dict())
         )
         await self.connection.execute(stmt)
+        return models.Schema(**data.dict(), id=schema_id)
 
-    async def delete(self, schema_id: int) -> None:
-        stmt = table_schemas_table.delete().where(table_schemas_table.c.id == schema_id)
-        await self.connection.execute(stmt)
-    
-    async def find(self, schema_id: int) -> models.Schema:
-        stmt = select(table_schemas_table).where(table_schemas_table.c.id == schema_id)
-        result = await self.connection.execute(stmt)
-        row = result.fetchone()
-        if not row:
-            raise models.SchemaNotFoundError(f"Schema with id {schema_id} not found.")
-        else:
-            return models.Schema(**row._mapping)
-
-    async def all(self) -> list[models.Schema]:
+    async def get_all(self) -> list[models.Schema]:
         stmt = select(table_schemas_table)
         result = await self.connection.execute(stmt)
         rows = result.fetchall()
@@ -52,6 +40,21 @@ class TableRepository(BaseRepository):
         result = await self.connection.execute(stmt)
         table_id = result.scalar_one()
         return models.Table(**data.dict(), id=table_id)
+    
+    async def update(self, table_id: int, data: models.TableUpdate) -> models.Table:
+        stmt = (
+            table_definitions_table.update()
+            .where(table_definitions_table.c.id == table_id)
+            .values(**data.dict())
+        )
+        await self.connection.execute(stmt)
+        return models.Table(**data.dict(), id=table_id)
+    
+    async def get_all(self) -> list[models.Table]:
+        stmt = select(table_definitions_table)
+        result = await self.connection.execute(stmt)
+        rows = result.fetchall()
+        return [models.Table(**row._mapping) for row in rows]
 
 class TableColumnRepository(BaseRepository):
     def __init__(self, conn: AsyncConnection):
@@ -62,3 +65,19 @@ class TableColumnRepository(BaseRepository):
         result = await self.connection.execute(stmt)
         column_id = result.scalar_one()
         return models.Column(**data.dict(), id=column_id)
+    
+    async def update(self, column_id: int, data: models.ColumnUpdate) -> models.Column:
+        stmt = (
+            table_columns_table.update()
+            .where(table_columns_table.c.id == column_id)
+            .values(**data.dict())
+        )
+        await self.connection.execute(stmt)
+        return models.Column(**data.dict(), id=column_id)
+    
+    async def get_all(self) -> list[models.Column]:
+        stmt = select(table_columns_table)
+        result = await self.connection.execute(stmt)
+        rows = result.fetchall()
+        return [models.Column(**row._mapping) for row in rows]
+
