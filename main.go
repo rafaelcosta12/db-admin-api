@@ -47,13 +47,12 @@ func main() {
 	userGroupsMembers.POST(":id_user", core.ShouldBeAdminOr403(), handlers.AddUserToGroup)
 	userGroupsMembers.DELETE(":id_user", core.ShouldBeAdminOr403(), handlers.RemoveUserFromGroup)
 
+	// Escopo connections é sobre comunicação direta com o banco de dados
 	connections := r.Group("/connections")
-	connections.GET("", handlers.GetConnections)
+	connections.GET("", core.ShouldBeAdminOr403(), handlers.GetConnections)
 	connections.POST("", core.ShouldBeAdminOr403(), handlers.CreateConnection)
+	connections.GET(":id/schemas", core.ShouldBeAdminOr403(), handlers.GetSchemas)
 	connections.DELETE(":id", core.ShouldBeAdminOr403(), handlers.RemoveConnection)
-
-	connectionsManagerSchemas := r.Group("/connections/:id/schemas")
-	connectionsManagerSchemas.GET("", handlers.GetSchemas)
 
 	r.Run() // :8080
 }
