@@ -14,7 +14,7 @@ class SchemasRepository(BaseRepository):
         stmt = insert(table_schemas_table).values(**data.dict()).returning(table_schemas_table.c.id)
         result = await self.connection.execute(stmt)
         schema_id = result.scalar_one()
-        return models.Schema(**data.dict(), id=schema_id)
+        return models.Schema(**data.model_dump(), id=schema_id)
     
     async def update(self, schema_id: int, data: models.SchemaUpdate) -> models.Schema:
         stmt = (
