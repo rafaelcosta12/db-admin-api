@@ -1,4 +1,4 @@
-package configurations
+package dto
 
 type Order string
 

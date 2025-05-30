@@ -1,13 +1,9 @@
-package configurations
+package dto
 
-import "time"
-
-type UserGroup struct {
-	ID        int       `db:"id" json:"id"`
-	Name      string    `db:"name" json:"name"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
-}
+import (
+	"db-admin/models/entities"
+	"time"
+)
 
 type UserGroupMember struct {
 	ID          int       `db:"id" json:"id"`
@@ -36,22 +32,22 @@ type UserGroupMemberOutput struct {
 	UserGroupID int `json:"user_group_id"`
 }
 
-func (ug *UserGroup) ToOutput() UserGroupOutput {
+func ToUserGroupOutput(ug *entities.UserGroup) UserGroupOutput {
 	return UserGroupOutput{
 		ID:   ug.ID,
 		Name: ug.Name,
 	}
 }
 
-func (ugc *UserGroupCreate) ToUserGroup() UserGroup {
-	return UserGroup{
+func (ugc *UserGroupCreate) ToUserGroup() entities.UserGroup {
+	return entities.UserGroup{
 		Name:      ugc.Name,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
 }
 
-func (ugc *UserGroupUpdate) Update(ug *UserGroup) {
+func (ugc *UserGroupUpdate) Update(ug *entities.UserGroup) {
 	ug.Name = ugc.Name
 	ug.UpdatedAt = time.Now()
 }

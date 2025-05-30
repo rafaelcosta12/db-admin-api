@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"db-admin/models/configurations"
 	"db-admin/models/entities"
 	"time"
 
@@ -22,7 +21,7 @@ const (
 type UserSearch struct {
 	Limit    int
 	Offset   int
-	Order    configurations.Order
+	Order    Order
 	Text     string
 	OrderBy  UserOrderBy
 	IsActive *bool

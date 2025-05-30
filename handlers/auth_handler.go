@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"db-admin/core"
-	"db-admin/models/auth"
+	"db-admin/models/dto"
 	"db-admin/repositories"
 	"net/http"
 
@@ -11,7 +11,7 @@ import (
 )
 
 func Login(c *gin.Context) {
-	var input auth.UserLogin
+	var input dto.UserLogin
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -36,7 +36,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, auth.LoginResponse{Token: token, Prefix: core.TokenPrefix})
+	c.JSON(http.StatusOK, dto.LoginResponse{Token: token, Prefix: core.TokenPrefix})
 }
 
 func Logout(c *gin.Context) {

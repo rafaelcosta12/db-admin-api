@@ -1,7 +1,7 @@
 package core
 
 import (
-	"db-admin/models/auth"
+	"db-admin/models/dto"
 	"db-admin/models/entities"
 	"time"
 
@@ -25,7 +25,7 @@ func GenerateToken(user entities.User) (string, error) {
 	return token.SignedString(jwtSecret)
 }
 
-func ValidateToken(tokenString string) (auth.UserToken, error) {
+func ValidateToken(tokenString string) (dto.UserToken, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
@@ -34,11 +34,11 @@ func ValidateToken(tokenString string) (auth.UserToken, error) {
 	})
 
 	if err != nil {
-		return auth.UserToken{}, err
+		return dto.UserToken{}, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		user := auth.UserToken{
+		user := dto.UserToken{
 			ID:      int(claims["user_id"].(float64)),
 			Email:   claims["email"].(string),
 			Name:    claims["name"].(string),
@@ -47,5 +47,5 @@ func ValidateToken(tokenString string) (auth.UserToken, error) {
 		return user, nil
 	}
 
-	return auth.UserToken{}, jwt.ErrSignatureInvalid
+	return dto.UserToken{}, jwt.ErrSignatureInvalid
 }

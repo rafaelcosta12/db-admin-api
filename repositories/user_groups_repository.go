@@ -2,11 +2,11 @@ package repositories
 
 import (
 	"db-admin/core"
-	"db-admin/models/configurations"
+	"db-admin/models/dto"
 	"db-admin/models/entities"
 )
 
-func CreateUserGroup(userGroup configurations.UserGroup) (configurations.UserGroup, error) {
+func CreateUserGroup(userGroup entities.UserGroup) (entities.UserGroup, error) {
 	var query = `
 	INSERT INTO user_groups 
 	(name, created_at, updated_at) 
@@ -16,13 +16,13 @@ func CreateUserGroup(userGroup configurations.UserGroup) (configurations.UserGro
 
 	err := core.AppDB.QueryRow(query, userGroup.Name, userGroup.CreatedAt, userGroup.UpdatedAt).Scan(&userGroup.ID)
 	if err != nil {
-		return configurations.UserGroup{}, err
+		return entities.UserGroup{}, err
 	}
 
 	return userGroup, nil
 }
 
-func UpdateUserGroup(userGroup configurations.UserGroup) (configurations.UserGroup, error) {
+func UpdateUserGroup(userGroup entities.UserGroup) (entities.UserGroup, error) {
 	var query = `
 	UPDATE user_groups 
 	SET 
@@ -33,23 +33,23 @@ func UpdateUserGroup(userGroup configurations.UserGroup) (configurations.UserGro
 
 	err := core.AppDB.QueryRow(query, userGroup.Name, userGroup.UpdatedAt, userGroup.ID).Scan(&userGroup.ID)
 	if err != nil {
-		return configurations.UserGroup{}, err
+		return entities.UserGroup{}, err
 	}
 
 	return userGroup, nil
 }
 
-func GetUserGroupByID(id int) (configurations.UserGroup, error) {
-	var userGroup configurations.UserGroup
+func GetUserGroupByID(id int) (entities.UserGroup, error) {
+	var userGroup entities.UserGroup
 	err := core.AppDB.Get(&userGroup, "SELECT * FROM user_groups WHERE id = $1", id)
 	if err != nil {
-		return configurations.UserGroup{}, err
+		return entities.UserGroup{}, err
 	}
 	return userGroup, nil
 }
 
-func GetAllUserGroups() ([]configurations.UserGroup, error) {
-	var userGroups []configurations.UserGroup
+func GetAllUserGroups() ([]entities.UserGroup, error) {
+	var userGroups []entities.UserGroup
 	err := core.AppDB.Select(&userGroups, "SELECT * FROM user_groups")
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func DeleteUserGroup(id int) error {
 	return nil
 }
 
-func AddUserToGroup(input configurations.UserGroupMember) (configurations.UserGroupMember, error) {
+func AddUserToGroup(input dto.UserGroupMember) (dto.UserGroupMember, error) {
 	var query = `
 	INSERT INTO user_group_membership 
 	(user_id, group_id, created_at, updated_at) 
@@ -80,7 +80,7 @@ func AddUserToGroup(input configurations.UserGroupMember) (configurations.UserGr
 
 	err := core.AppDB.QueryRow(query, input.UserID, input.UserGroupID, input.CreatedAt, input.UpdatedAt).Scan(&input.ID)
 	if err != nil {
-		return configurations.UserGroupMember{}, err
+		return dto.UserGroupMember{}, err
 	}
 
 	return input, nil

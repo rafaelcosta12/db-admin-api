@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"db-admin/models/auth"
-	"db-admin/models/configurations"
 	"db-admin/models/dto"
 	"db-admin/repositories"
 	"net/http"
@@ -16,7 +14,7 @@ func searchParams(c *gin.Context) dto.UserSearch {
 	search := dto.UserSearch{
 		Limit:    10,
 		Offset:   0,
-		Order:    configurations.Asc,
+		Order:    dto.Asc,
 		Text:     "%",
 		OrderBy:  dto.CreatedAtOrderBy,
 		IsActive: nil,
@@ -43,9 +41,9 @@ func searchParams(c *gin.Context) dto.UserSearch {
 
 	order := c.Query("order")
 	if order == "" || order == "asc" {
-		search.Order = configurations.Asc
+		search.Order = dto.Asc
 	} else if order == "desc" {
-		search.Order = configurations.Desc
+		search.Order = dto.Desc
 	}
 
 	text := c.Query("text")
@@ -91,7 +89,7 @@ func GetUsers(c *gin.Context) {
 		items[i] = dto.ToUserOutput(&user)
 	}
 
-	c.JSON(http.StatusOK, configurations.Pagination{
+	c.JSON(http.StatusOK, dto.Pagination{
 		Total: len(items),
 		Page:  1,
 		Items: items,
@@ -208,7 +206,7 @@ func GetMe(c *gin.Context) {
 		return
 	}
 
-	user, err := repositories.GetUserByID(u.(auth.UserToken).ID)
+	user, err := repositories.GetUserByID(u.(dto.UserToken).ID)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user data"})

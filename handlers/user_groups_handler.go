@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"db-admin/models/configurations"
 	"db-admin/models/dto"
 	"db-admin/repositories"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 )
 
 func CreateUserGroup(c *gin.Context) {
-	var input configurations.UserGroupCreate
+	var input dto.UserGroupCreate
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -27,7 +26,7 @@ func CreateUserGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, userGroup.ToOutput())
+	c.JSON(http.StatusCreated, dto.ToUserGroupOutput(&userGroup))
 }
 
 func UpdateUserGroup(c *gin.Context) {
@@ -37,7 +36,7 @@ func UpdateUserGroup(c *gin.Context) {
 		return
 	}
 
-	var input configurations.UserGroupUpdate
+	var input dto.UserGroupUpdate
 	err = c.ShouldBindJSON(&input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -58,7 +57,7 @@ func UpdateUserGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, userGroup.ToOutput())
+	c.JSON(http.StatusOK, dto.ToUserGroupOutput(&userGroup))
 }
 
 func GetUserGroup(c *gin.Context) {
@@ -74,7 +73,7 @@ func GetUserGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, userGroup.ToOutput())
+	c.JSON(http.StatusOK, dto.ToUserGroupOutput(&userGroup))
 }
 
 func GetUserGroups(c *gin.Context) {
@@ -86,10 +85,10 @@ func GetUserGroups(c *gin.Context) {
 
 	items := make([]any, len(userGroups))
 	for i, userGroup := range userGroups {
-		items[i] = userGroup.ToOutput()
+		items[i] = dto.ToUserGroupOutput(&userGroup)
 	}
 
-	c.JSON(http.StatusOK, configurations.Pagination{
+	c.JSON(http.StatusOK, dto.Pagination{
 		Total: len(items),
 		Page:  1,
 		Items: items,
@@ -125,7 +124,7 @@ func GetUserGroupByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, userGroup.ToOutput())
+	c.JSON(http.StatusOK, dto.ToUserGroupOutput(&userGroup))
 }
 
 func AddUserToGroup(c *gin.Context) {
@@ -147,7 +146,7 @@ func AddUserToGroup(c *gin.Context) {
 		return
 	}
 
-	member := configurations.UserGroupMember{
+	member := dto.UserGroupMember{
 		UserID:      userId,
 		UserGroupID: groupId,
 		CreatedAt:   time.Now(),
