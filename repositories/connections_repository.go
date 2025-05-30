@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"db-admin/core"
-	"db-admin/models/configurations"
 	"db-admin/models/database"
+	"db-admin/models/entities"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -18,15 +18,15 @@ var restrictedSchemas = []string{
 	"pg_internal",
 }
 
-func GetConnectionByID(connectionID uuid.UUID) (configurations.Connection, error) {
+func GetConnectionByID(connectionID uuid.UUID) (entities.Connection, error) {
 	return core.GetConnectionByID(connectionID)
 }
 
-func CreateConnection(connection configurations.Connection) (configurations.Connection, error) {
+func CreateConnection(connection entities.Connection) (entities.Connection, error) {
 	return core.CreateConnection(connection)
 }
 
-func UpdateConnection(connectionID uuid.UUID, connection configurations.Connection) (configurations.Connection, error) {
+func UpdateConnection(connectionID uuid.UUID, connection entities.Connection) (entities.Connection, error) {
 	return core.UpdateConnection(connectionID, connection)
 }
 
@@ -34,8 +34,8 @@ func DeleteConnection(connectionID uuid.UUID) error {
 	return core.DeleteConnection(connectionID)
 }
 
-func GetAllConnections() ([]configurations.Connection, error) {
-	connections := []configurations.Connection{}
+func GetAllConnections() ([]entities.Connection, error) {
+	connections := []entities.Connection{}
 	err := core.AppDB.Select(&connections, "SELECT id, driver, connection_string, name FROM connections")
 	if err != nil {
 		return nil, err

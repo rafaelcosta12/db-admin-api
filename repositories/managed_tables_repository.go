@@ -2,13 +2,13 @@ package repositories
 
 import (
 	"db-admin/core"
-	"db-admin/models/configurations"
+	"db-admin/models/entities"
 
 	"github.com/google/uuid"
 )
 
-func GetManagedTables() ([]configurations.ManagedTable, error) {
-	var managedTables []configurations.ManagedTable
+func GetManagedTables() ([]entities.ManagedTable, error) {
+	var managedTables []entities.ManagedTable
 	query := "SELECT id, connection_id, table_name, schema_name FROM managed_tables"
 	err := core.AppDB.Select(&managedTables, query)
 	if err != nil {
@@ -18,8 +18,8 @@ func GetManagedTables() ([]configurations.ManagedTable, error) {
 	return managedTables, nil
 }
 
-func GetManagedTablesByConnection(connectionId uuid.UUID) ([]configurations.ManagedTable, error) {
-	var managedTables []configurations.ManagedTable
+func GetManagedTablesByConnection(connectionId uuid.UUID) ([]entities.ManagedTable, error) {
+	var managedTables []entities.ManagedTable
 	query := "SELECT id, connection_id, table_name, schema_name FROM managed_tables WHERE connection_id = $1"
 	err := core.AppDB.Select(&managedTables, query, connectionId)
 	if err != nil {
@@ -29,11 +29,11 @@ func GetManagedTablesByConnection(connectionId uuid.UUID) ([]configurations.Mana
 	return managedTables, nil
 }
 
-func CreateManagedTable(table configurations.ManagedTable) (configurations.ManagedTable, error) {
+func CreateManagedTable(table entities.ManagedTable) (entities.ManagedTable, error) {
 	query := "INSERT INTO managed_tables (id, connection_id, table_name, schema_name) VALUES ($1, $2, $3, $4) RETURNING id"
 	err := core.AppDB.QueryRow(query, table.ID, table.ConnectionID, table.TableName, table.SchemaName).Scan(&table.ID)
 	if err != nil {
-		return configurations.ManagedTable{}, err
+		return entities.ManagedTable{}, err
 	}
 
 	return table, nil

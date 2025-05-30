@@ -2,7 +2,7 @@ package core
 
 import (
 	"db-admin/models/auth"
-	"db-admin/models/configurations"
+	"db-admin/models/entities"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -10,7 +10,7 @@ import (
 
 var jwtSecret = []byte("my_secret_key")
 
-func GenerateToken(user configurations.User) (string, error) {
+func GenerateToken(user entities.User) (string, error) {
 	claims := jwt.MapClaims{
 		"sub":      user.ID,
 		"iss":      "db-admin.devstacker.com",

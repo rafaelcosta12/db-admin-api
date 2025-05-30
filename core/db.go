@@ -2,7 +2,7 @@ package core
 
 import (
 	"database/sql"
-	"db-admin/models/configurations"
+	"db-admin/models/entities"
 	"log"
 	"sync"
 	"time"
@@ -29,7 +29,7 @@ func ConfigureAppDB() {
 var connectedDBs = map[uuid.UUID]*sqlx.DB{}
 var mu sync.Mutex
 
-func connectDB(connection configurations.Connection) (*sqlx.DB, error) {
+func connectDB(connection entities.Connection) (*sqlx.DB, error) {
 	var err error
 	db, err := sqlx.Connect("postgres", connection.ConnectionString)
 	if err != nil {
@@ -43,20 +43,20 @@ func connectDB(connection configurations.Connection) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func GetConnectionByID(id uuid.UUID) (configurations.Connection, error) {
-	var connection configurations.Connection
+func GetConnectionByID(id uuid.UUID) (entities.Connection, error) {
+	var connection entities.Connection
 	err := AppDB.Get(&connection, "SELECT id, driver, connection_string, name FROM connections WHERE id = $1", id)
 	if err != nil {
-		return configurations.Connection{}, err
+		return entities.Connection{}, err
 	}
 	return connection, nil
 }
 
-func CreateConnection(connection configurations.Connection) (configurations.Connection, error) {
+func CreateConnection(connection entities.Connection) (entities.Connection, error) {
 	connection.ID = uuid.New()
 	_, err := AppDB.NamedExec("INSERT INTO connections (id, driver, connection_string, name) VALUES (:id, :driver, :connection_string, :name)", connection)
 	if err != nil {
-		return configurations.Connection{}, err
+		return entities.Connection{}, err
 	}
 	return connection, nil
 }
@@ -72,10 +72,10 @@ func DeleteConnection(id uuid.UUID) error {
 	return nil
 }
 
-func UpdateConnection(id uuid.UUID, connection configurations.Connection) (configurations.Connection, error) {
+func UpdateConnection(id uuid.UUID, connection entities.Connection) (entities.Connection, error) {
 	_, err := AppDB.NamedExec("UPDATE connections SET driver = :driver, connection_string = :connection_string, name = :name WHERE id = :id", connection)
 	if err != nil {
-		return configurations.Connection{}, err
+		return entities.Connection{}, err
 	}
 	mu.Lock()
 	defer mu.Unlock()

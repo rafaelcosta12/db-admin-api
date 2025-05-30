@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"db-admin/models/configurations"
+	"db-admin/models/dto"
 	"db-admin/repositories"
 	"net/http"
 
@@ -10,7 +10,7 @@ import (
 )
 
 func CreateConnection(c *gin.Context) {
-	var connection configurations.ConnectionCreate
+	var connection dto.ConnectionCreate
 	if err := c.ShouldBindJSON(&connection); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -22,7 +22,7 @@ func CreateConnection(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, conn.ToOutput())
+	c.JSON(http.StatusCreated, dto.ToConnectionOutput(conn))
 }
 
 func GetConnections(c *gin.Context) {
@@ -34,7 +34,7 @@ func GetConnections(c *gin.Context) {
 
 	var output []any = make([]any, len(connections))
 	for i, conn := range connections {
-		output[i] = conn.ToOutput()
+		output[i] = dto.ToConnectionOutput(conn)
 	}
 
 	c.JSON(http.StatusOK, output)

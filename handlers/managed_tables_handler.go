@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"db-admin/models/configurations"
+	"db-admin/models/dto"
 	"db-admin/repositories"
 	"net/http"
 
@@ -17,14 +17,14 @@ func GetManagedTables(c *gin.Context) {
 
 	output := make([]any, len(tables))
 	for i, table := range tables {
-		output[i] = table.ToOutput()
+		output[i] = dto.ToManagedTableOutput(&table)
 	}
 
 	c.JSON(http.StatusOK, output)
 }
 
 func CreateManagedTable(c *gin.Context) {
-	var input configurations.ManagedTableCreate
+	var input dto.ManagedTableCreate
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
 		return
@@ -36,5 +36,5 @@ func CreateManagedTable(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, createdTable.ToOutput())
+	c.JSON(http.StatusCreated, dto.ToManagedTableOutput(&createdTable))
 }

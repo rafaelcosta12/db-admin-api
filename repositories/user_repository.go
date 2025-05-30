@@ -2,20 +2,21 @@ package repositories
 
 import (
 	"db-admin/core"
-	"db-admin/models/configurations"
+	"db-admin/models/dto"
+	"db-admin/models/entities"
 )
 
-func GetUserByID(id int) (configurations.User, error) {
-	var user configurations.User
+func GetUserByID(id int) (entities.User, error) {
+	var user entities.User
 	err := core.AppDB.Get(&user, "SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
-		return configurations.User{}, err
+		return entities.User{}, err
 	}
 	return user, nil
 }
 
-func GetUsers(search configurations.UserSearch) ([]configurations.User, error) {
-	var users []configurations.User
+func GetUsers(search dto.UserSearch) ([]entities.User, error) {
+	var users []entities.User
 	var query = `
 	SELECT * FROM users
 	`
@@ -54,16 +55,16 @@ func GetUsers(search configurations.UserSearch) ([]configurations.User, error) {
 	return users, nil
 }
 
-func GetUserByEmail(email string) (configurations.User, error) {
-	var user configurations.User
+func GetUserByEmail(email string) (entities.User, error) {
+	var user entities.User
 	err := core.AppDB.Get(&user, "SELECT * FROM users WHERE email = $1", email)
 	if err != nil {
-		return configurations.User{}, err
+		return entities.User{}, err
 	}
 	return user, nil
 }
 
-func CreateUser(user configurations.User) (configurations.User, error) {
+func CreateUser(user entities.User) (entities.User, error) {
 	var query = `
 	INSERT INTO users 
 	(email, name, password, is_active, is_admin, created_at, updated_at, profile_img) 
@@ -73,13 +74,13 @@ func CreateUser(user configurations.User) (configurations.User, error) {
 
 	err := core.AppDB.QueryRow(query, user.Email, user.Name, user.Password, user.IsActive, user.IsAdmin, user.CreatedAt, user.UpdatedAt, user.ProfileImg).Scan(&user.ID)
 	if err != nil {
-		return configurations.User{}, err
+		return entities.User{}, err
 	}
 
 	return user, nil
 }
 
-func UpdateUser(user configurations.User) (configurations.User, error) {
+func UpdateUser(user entities.User) (entities.User, error) {
 	var query = `
 	UPDATE users 
 	SET 
@@ -95,7 +96,7 @@ func UpdateUser(user configurations.User) (configurations.User, error) {
 
 	err := core.AppDB.QueryRow(query, user.Email, user.Name, user.Password, user.IsActive, user.IsAdmin, user.UpdatedAt, user.ProfileImg, user.ID).Scan(&user.ID)
 	if err != nil {
-		return configurations.User{}, err
+		return entities.User{}, err
 	}
 
 	return user, nil

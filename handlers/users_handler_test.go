@@ -5,7 +5,8 @@ package handlers
 import (
 	"bytes"
 	"db-admin/core"
-	"db-admin/models/configurations"
+	"db-admin/models/dto"
+	"db-admin/models/entities"
 	"db-admin/repositories"
 	"encoding/json"
 	"net/http"
@@ -40,10 +41,10 @@ func cleanupUserByEmail(email string) {
 	core.AppDB.Exec("DELETE FROM users WHERE email = $1", email)
 }
 
-func createDummyUser() configurations.User {
+func createDummyUser() entities.User {
 	email := "integration_test_dup@example.com"
 	cleanupUserByEmail(email)
-	user := configurations.UserCreate{
+	user := dto.UserCreate{
 		Email:    email,
 		Password: "password123",
 		Name:     "Dup User",
@@ -59,7 +60,7 @@ func TestCreateUser_Success(t *testing.T) {
 	cleanupUserByEmail(email)
 	defer cleanupUserByEmail(email)
 
-	input := configurations.UserCreate{
+	input := dto.UserCreate{
 		Email:    email,
 		Password: "password123",
 		Name:     "Test User",
@@ -101,7 +102,7 @@ func TestUpdateUser_Success(t *testing.T) {
 	u := createDummyUser()
 	defer cleanupUserByEmail(u.Email)
 
-	update := configurations.UserUpdate{
+	update := dto.UserUpdate{
 		Name:       "Dup User",
 		IsAdmin:    false,
 		IsActive:   true,

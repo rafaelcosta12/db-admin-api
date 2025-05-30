@@ -1,17 +1,11 @@
-package configurations
+package dto
 
 import (
 	"db-admin/models/database"
+	"db-admin/models/entities"
 
 	"github.com/google/uuid"
 )
-
-type ManagedTable struct {
-	ID           uuid.UUID `db:"id" json:"id"`
-	ConnectionID uuid.UUID `db:"connection_id" json:"connection_id"`
-	TableName    string    `db:"table_name" json:"table_name"`
-	SchemaName   string    `db:"schema_name" json:"schema_name"`
-}
 
 type ManagedTableOutput struct {
 	ID           uuid.UUID `json:"id"`
@@ -31,16 +25,16 @@ type ManagedTableCreate struct {
 	SchemaName   string    `json:"schema_name" binding:"required"`
 }
 
-func (mt *ManagedTableCreate) ToManagedTable() ManagedTable {
-	return ManagedTable{
+func (m *ManagedTableCreate) ToManagedTable() entities.ManagedTable {
+	return entities.ManagedTable{
 		ID:           uuid.New(),
-		ConnectionID: mt.ConnectionID,
-		TableName:    mt.TableName,
-		SchemaName:   mt.SchemaName,
+		ConnectionID: m.ConnectionID,
+		TableName:    m.TableName,
+		SchemaName:   m.SchemaName,
 	}
 }
 
-func (mt *ManagedTable) ToOutput() ManagedTableOutput {
+func ToManagedTableOutput(mt *entities.ManagedTable) ManagedTableOutput {
 	return ManagedTableOutput{
 		ID:           mt.ID,
 		ConnectionID: mt.ConnectionID,

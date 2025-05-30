@@ -3,6 +3,7 @@ package repositories
 import (
 	"db-admin/core"
 	"db-admin/models/configurations"
+	"db-admin/models/entities"
 )
 
 func CreateUserGroup(userGroup configurations.UserGroup) (configurations.UserGroup, error) {
@@ -98,8 +99,8 @@ func RemoveUserFromGroup(userId, groupId int) error {
 	return nil
 }
 
-func GetUserGroupMembers(groupId int) ([]configurations.User, error) {
-	var members []configurations.User
+func GetUserGroupMembers(groupId int) ([]entities.User, error) {
+	var members []entities.User
 	err := core.AppDB.Select(&members, "SELECT u.* FROM user_group_membership m INNER JOIN users u ON u.id = m.user_id WHERE m.group_id = $1", groupId)
 	if err != nil {
 		return nil, err

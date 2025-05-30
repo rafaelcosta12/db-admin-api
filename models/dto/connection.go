@@ -1,13 +1,10 @@
-package configurations
+package dto
 
-import "github.com/google/uuid"
+import (
+	"db-admin/models/entities"
 
-type Connection struct {
-	ID               uuid.UUID `db:"id"`
-	ConnectionString string    `db:"connection_string"`
-	Name             string    `db:"name"`
-	Driver           string    `db:"driver"`
-}
+	"github.com/google/uuid"
+)
 
 type ConnectionCreate struct {
 	ConnectionString string `json:"connection_string" binding:"required"`
@@ -26,8 +23,8 @@ type ConnectionOutput struct {
 	Driver           string    `json:"driver"`
 }
 
-func (c *ConnectionCreate) ToConnection() Connection {
-	return Connection{
+func (c *ConnectionCreate) ToConnection() entities.Connection {
+	return entities.Connection{
 		ID:               uuid.New(),
 		ConnectionString: c.ConnectionString,
 		Name:             c.Name,
@@ -35,13 +32,7 @@ func (c *ConnectionCreate) ToConnection() Connection {
 	}
 }
 
-func (c *Connection) Update(d ConnectionUpdate) {
-	c.ConnectionString = d.ConnectionString
-	c.Name = d.Name
-	c.Driver = d.Driver
-}
-
-func (c Connection) ToOutput() ConnectionOutput {
+func ToConnectionOutput(c entities.Connection) ConnectionOutput {
 	return ConnectionOutput{
 		ID:               c.ID,
 		ConnectionString: "********", // Mask sensitive data

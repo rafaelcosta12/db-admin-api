@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"db-admin/models/configurations"
+	"db-admin/models/dto"
 	"db-admin/repositories"
 	"net/http"
 	"strconv"
@@ -197,9 +198,9 @@ func GetUserGroupMembers(c *gin.Context) {
 		return
 	}
 
-	var memberOutputs []configurations.UserOutput
+	var memberOutputs []dto.UserOutput
 	for _, member := range members {
-		memberOutputs = append(memberOutputs, member.ToOutput())
+		memberOutputs = append(memberOutputs, dto.ToUserOutput(&member))
 	}
 
 	c.JSON(http.StatusOK, memberOutputs)

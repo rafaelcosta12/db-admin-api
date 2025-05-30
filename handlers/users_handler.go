@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"db-admin/models/auth"
 	"db-admin/models/configurations"
+	"db-admin/models/dto"
 	"db-admin/repositories"
 	"net/http"
 	"strconv"
@@ -11,13 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func searchParams(c *gin.Context) configurations.UserSearch {
-	search := configurations.UserSearch{
+func searchParams(c *gin.Context) dto.UserSearch {
+	search := dto.UserSearch{
 		Limit:    10,
 		Offset:   0,
 		Order:    configurations.Asc,
 		Text:     "%",
-		OrderBy:  configurations.CreatedAtOrderBy,
+		OrderBy:  dto.CreatedAtOrderBy,
 		IsActive: nil,
 		IsAdmin:  nil,
 	}
@@ -27,17 +28,17 @@ func searchParams(c *gin.Context) configurations.UserSearch {
 
 	orderBy := c.Query("order_by")
 	if orderBy == "" || orderBy == "created_at" {
-		search.OrderBy = configurations.CreatedAtOrderBy
+		search.OrderBy = dto.CreatedAtOrderBy
 	} else if orderBy == "email" {
-		search.OrderBy = configurations.EmailOrderBy
+		search.OrderBy = dto.EmailOrderBy
 	} else if orderBy == "name" {
-		search.OrderBy = configurations.NameOrderBy
+		search.OrderBy = dto.NameOrderBy
 	} else if orderBy == "is_admin" {
-		search.OrderBy = configurations.IsAdminOrderBy
+		search.OrderBy = dto.IsAdminOrderBy
 	} else if orderBy == "is_active" {
-		search.OrderBy = configurations.IsActiveOrderBy
+		search.OrderBy = dto.IsActiveOrderBy
 	} else if orderBy == "updated_at" {
-		search.OrderBy = configurations.UpdatedAtOrderBy
+		search.OrderBy = dto.UpdatedAtOrderBy
 	}
 
 	order := c.Query("order")
@@ -87,7 +88,7 @@ func GetUsers(c *gin.Context) {
 
 	items := make([]any, len(users))
 	for i, user := range users {
-		items[i] = user.ToOutput()
+		items[i] = dto.ToUserOutput(&user)
 	}
 
 	c.JSON(http.StatusOK, configurations.Pagination{
@@ -113,7 +114,7 @@ func GetUserByID(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, user.ToOutput())
+	c.JSON(http.StatusOK, dto.ToUserOutput(&user))
 }
 
 func validateEmailExistence(email string) (bool, error) {
@@ -122,7 +123,7 @@ func validateEmailExistence(email string) (bool, error) {
 }
 
 func CreateUser(c *gin.Context) {
-	var input configurations.UserCreate
+	var input dto.UserCreate
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -151,7 +152,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, user.ToOutput())
+	c.JSON(http.StatusCreated, dto.ToUserOutput(&user))
 }
 
 func UpdateUser(c *gin.Context) {
@@ -161,7 +162,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var input configurations.UserUpdate
+	var input dto.UserUpdate
 	err = c.ShouldBindJSON(&input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -174,14 +175,14 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user.Update(input)
+	dto.UpdateUser(&user, input)
 	user, err = repositories.UpdateUser(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, user.ToOutput())
+	c.JSON(http.StatusOK, dto.ToUserOutput(&user))
 }
 
 func DeleteUser(c *gin.Context) {
@@ -214,5 +215,5 @@ func GetMe(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user.ToOutput())
+	c.JSON(http.StatusOK, dto.ToUserOutput(&user))
 }

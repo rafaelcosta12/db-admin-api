@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"db-admin/models/configurations"
+	"db-admin/models/dto"
 	"db-admin/repositories"
 
 	"github.com/gin-gonic/gin"
@@ -37,7 +37,7 @@ func GetTables(c *gin.Context) {
 
 	output := make([]any, len(tables))
 	for i, table := range tables {
-		output[i] = configurations.ManagedTableOutputWithColumnOutput{
+		output[i] = dto.ManagedTableOutputWithColumnOutput{
 			ID:          managedTables[i].ID,
 			TableOutput: table.ToOutput(),
 		}
