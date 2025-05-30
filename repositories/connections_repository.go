@@ -3,6 +3,7 @@ package repositories
 import (
 	"db-admin/core"
 	"db-admin/models"
+	"db-admin/models/database"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -42,8 +43,8 @@ func GetAllConnections() ([]models.Connection, error) {
 	return connections, nil
 }
 
-func GetSchemas(connectionID uuid.UUID) ([]models.Schema, error) {
-	var schemas []models.Schema
+func GetSchemas(connectionID uuid.UUID) ([]database.Schema, error) {
+	var schemas []database.Schema
 	conn, err := core.GetDB(connectionID)
 	if err != nil {
 		return nil, err
@@ -68,7 +69,33 @@ func GetSchemas(connectionID uuid.UUID) ([]models.Schema, error) {
 	return schemas, nil
 }
 
-func fetchTablesForSchemas(schemas *[]models.Schema, conn *sqlx.DB) error {
+func GetTables(connectionID uuid.UUID, schemas []string, tables []string) ([]database.Table, error) {
+	conn, err := core.GetDB(connectionID)
+	if err != nil {
+		return nil, err
+	}
+
+	query, args, err := sqlx.In("SELECT DISTINCT table_name, table_schema FROM information_schema.tables WHERE table_schema NOT IN (?) AND table_schema IN (?) AND table_name IN (?)", restrictedSchemas, schemas, tables)
+	if err != nil {
+		return nil, err
+	}
+	query = conn.Rebind(query)
+
+	var allTables []database.Table
+	err = conn.Select(&allTables, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	err = fetchColumnsForTables(&allTables, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	return allTables, nil
+}
+
+func fetchTablesForSchemas(schemas *[]database.Schema, conn *sqlx.DB) error {
 	schemasNames := []string{}
 	for _, schema := range *schemas {
 		schemasNames = append(schemasNames, schema.Name)
@@ -80,7 +107,7 @@ func fetchTablesForSchemas(schemas *[]models.Schema, conn *sqlx.DB) error {
 	}
 	query = conn.Rebind(query)
 
-	var allTables []models.Table
+	var allTables []database.Table
 	err = conn.Select(&allTables, query, args...)
 	if err != nil {
 		return err
@@ -103,7 +130,7 @@ func fetchTablesForSchemas(schemas *[]models.Schema, conn *sqlx.DB) error {
 	return nil
 }
 
-func fetchColumnsForTables(tables *[]models.Table, conn *sqlx.DB) error {
+func fetchColumnsForTables(tables *[]database.Table, conn *sqlx.DB) error {
 	tablesNames := []string{}
 	for _, table := range *tables {
 		tablesNames = append(tablesNames, table.Name)
@@ -115,7 +142,7 @@ func fetchColumnsForTables(tables *[]models.Table, conn *sqlx.DB) error {
 	}
 	query = conn.Rebind(query)
 
-	var allColumns []models.Column
+	var allColumns []database.Column
 	err = conn.Select(&allColumns, query, args...)
 	if err != nil {
 		return err

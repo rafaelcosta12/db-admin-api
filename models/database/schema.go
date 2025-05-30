@@ -1,4 +1,4 @@
-package models
+package database
 
 type Schema struct {
 	Name   string `db:"table_schema"`
@@ -26,6 +26,7 @@ type SchemaOutput struct {
 
 type TableOutput struct {
 	Name    string         `json:"name"`
+	Schema  string         `json:"schema"`
 	Columns []ColumnOutput `json:"columns"`
 }
 
@@ -50,7 +51,8 @@ func (s *Schema) ToOutput() SchemaOutput {
 
 func (t *Table) ToOutput() TableOutput {
 	output := TableOutput{
-		Name: t.Name,
+		Name:   t.Name,
+		Schema: t.SchemaName,
 	}
 
 	for _, column := range t.Columns {
