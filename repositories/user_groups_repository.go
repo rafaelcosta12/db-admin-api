@@ -2,10 +2,10 @@ package repositories
 
 import (
 	"db-admin/core"
-	"db-admin/models"
+	"db-admin/models/configurations"
 )
 
-func CreateUserGroup(userGroup models.UserGroup) (models.UserGroup, error) {
+func CreateUserGroup(userGroup configurations.UserGroup) (configurations.UserGroup, error) {
 	var query = `
 	INSERT INTO user_groups 
 	(name, created_at, updated_at) 
@@ -15,13 +15,13 @@ func CreateUserGroup(userGroup models.UserGroup) (models.UserGroup, error) {
 
 	err := core.AppDB.QueryRow(query, userGroup.Name, userGroup.CreatedAt, userGroup.UpdatedAt).Scan(&userGroup.ID)
 	if err != nil {
-		return models.UserGroup{}, err
+		return configurations.UserGroup{}, err
 	}
 
 	return userGroup, nil
 }
 
-func UpdateUserGroup(userGroup models.UserGroup) (models.UserGroup, error) {
+func UpdateUserGroup(userGroup configurations.UserGroup) (configurations.UserGroup, error) {
 	var query = `
 	UPDATE user_groups 
 	SET 
@@ -32,23 +32,23 @@ func UpdateUserGroup(userGroup models.UserGroup) (models.UserGroup, error) {
 
 	err := core.AppDB.QueryRow(query, userGroup.Name, userGroup.UpdatedAt, userGroup.ID).Scan(&userGroup.ID)
 	if err != nil {
-		return models.UserGroup{}, err
+		return configurations.UserGroup{}, err
 	}
 
 	return userGroup, nil
 }
 
-func GetUserGroupByID(id int) (models.UserGroup, error) {
-	var userGroup models.UserGroup
+func GetUserGroupByID(id int) (configurations.UserGroup, error) {
+	var userGroup configurations.UserGroup
 	err := core.AppDB.Get(&userGroup, "SELECT * FROM user_groups WHERE id = $1", id)
 	if err != nil {
-		return models.UserGroup{}, err
+		return configurations.UserGroup{}, err
 	}
 	return userGroup, nil
 }
 
-func GetAllUserGroups() ([]models.UserGroup, error) {
-	var userGroups []models.UserGroup
+func GetAllUserGroups() ([]configurations.UserGroup, error) {
+	var userGroups []configurations.UserGroup
 	err := core.AppDB.Select(&userGroups, "SELECT * FROM user_groups")
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func DeleteUserGroup(id int) error {
 	return nil
 }
 
-func AddUserToGroup(input models.UserGroupMember) (models.UserGroupMember, error) {
+func AddUserToGroup(input configurations.UserGroupMember) (configurations.UserGroupMember, error) {
 	var query = `
 	INSERT INTO user_group_membership 
 	(user_id, group_id, created_at, updated_at) 
@@ -79,7 +79,7 @@ func AddUserToGroup(input models.UserGroupMember) (models.UserGroupMember, error
 
 	err := core.AppDB.QueryRow(query, input.UserID, input.UserGroupID, input.CreatedAt, input.UpdatedAt).Scan(&input.ID)
 	if err != nil {
-		return models.UserGroupMember{}, err
+		return configurations.UserGroupMember{}, err
 	}
 
 	return input, nil
@@ -98,8 +98,8 @@ func RemoveUserFromGroup(userId, groupId int) error {
 	return nil
 }
 
-func GetUserGroupMembers(groupId int) ([]models.User, error) {
-	var members []models.User
+func GetUserGroupMembers(groupId int) ([]configurations.User, error) {
+	var members []configurations.User
 	err := core.AppDB.Select(&members, "SELECT u.* FROM user_group_membership m INNER JOIN users u ON u.id = m.user_id WHERE m.group_id = $1", groupId)
 	if err != nil {
 		return nil, err

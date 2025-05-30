@@ -2,20 +2,20 @@ package repositories
 
 import (
 	"db-admin/core"
-	"db-admin/models"
+	"db-admin/models/configurations"
 )
 
-func GetUserByID(id int) (models.User, error) {
-	var user models.User
+func GetUserByID(id int) (configurations.User, error) {
+	var user configurations.User
 	err := core.AppDB.Get(&user, "SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
-		return models.User{}, err
+		return configurations.User{}, err
 	}
 	return user, nil
 }
 
-func GetUsers(search models.UserSearch) ([]models.User, error) {
-	var users []models.User
+func GetUsers(search configurations.UserSearch) ([]configurations.User, error) {
+	var users []configurations.User
 	var query = `
 	SELECT * FROM users
 	`
@@ -54,16 +54,16 @@ func GetUsers(search models.UserSearch) ([]models.User, error) {
 	return users, nil
 }
 
-func GetUserByEmail(email string) (models.User, error) {
-	var user models.User
+func GetUserByEmail(email string) (configurations.User, error) {
+	var user configurations.User
 	err := core.AppDB.Get(&user, "SELECT * FROM users WHERE email = $1", email)
 	if err != nil {
-		return models.User{}, err
+		return configurations.User{}, err
 	}
 	return user, nil
 }
 
-func CreateUser(user models.User) (models.User, error) {
+func CreateUser(user configurations.User) (configurations.User, error) {
 	var query = `
 	INSERT INTO users 
 	(email, name, password, is_active, is_admin, created_at, updated_at, profile_img) 
@@ -73,13 +73,13 @@ func CreateUser(user models.User) (models.User, error) {
 
 	err := core.AppDB.QueryRow(query, user.Email, user.Name, user.Password, user.IsActive, user.IsAdmin, user.CreatedAt, user.UpdatedAt, user.ProfileImg).Scan(&user.ID)
 	if err != nil {
-		return models.User{}, err
+		return configurations.User{}, err
 	}
 
 	return user, nil
 }
 
-func UpdateUser(user models.User) (models.User, error) {
+func UpdateUser(user configurations.User) (configurations.User, error) {
 	var query = `
 	UPDATE users 
 	SET 
@@ -95,7 +95,7 @@ func UpdateUser(user models.User) (models.User, error) {
 
 	err := core.AppDB.QueryRow(query, user.Email, user.Name, user.Password, user.IsActive, user.IsAdmin, user.UpdatedAt, user.ProfileImg, user.ID).Scan(&user.ID)
 	if err != nil {
-		return models.User{}, err
+		return configurations.User{}, err
 	}
 
 	return user, nil

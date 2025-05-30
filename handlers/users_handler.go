@@ -2,7 +2,8 @@ package handlers
 
 import (
 	"database/sql"
-	"db-admin/models"
+	"db-admin/models/auth"
+	"db-admin/models/configurations"
 	"db-admin/repositories"
 	"net/http"
 	"strconv"
@@ -10,13 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func searchParams(c *gin.Context) models.UserSearch {
-	search := models.UserSearch{
+func searchParams(c *gin.Context) configurations.UserSearch {
+	search := configurations.UserSearch{
 		Limit:    10,
 		Offset:   0,
-		Order:    models.Asc,
+		Order:    configurations.Asc,
 		Text:     "%",
-		OrderBy:  models.CreatedAtOrderBy,
+		OrderBy:  configurations.CreatedAtOrderBy,
 		IsActive: nil,
 		IsAdmin:  nil,
 	}
@@ -26,24 +27,24 @@ func searchParams(c *gin.Context) models.UserSearch {
 
 	orderBy := c.Query("order_by")
 	if orderBy == "" || orderBy == "created_at" {
-		search.OrderBy = models.CreatedAtOrderBy
+		search.OrderBy = configurations.CreatedAtOrderBy
 	} else if orderBy == "email" {
-		search.OrderBy = models.EmailOrderBy
+		search.OrderBy = configurations.EmailOrderBy
 	} else if orderBy == "name" {
-		search.OrderBy = models.NameOrderBy
+		search.OrderBy = configurations.NameOrderBy
 	} else if orderBy == "is_admin" {
-		search.OrderBy = models.IsAdminOrderBy
+		search.OrderBy = configurations.IsAdminOrderBy
 	} else if orderBy == "is_active" {
-		search.OrderBy = models.IsActiveOrderBy
+		search.OrderBy = configurations.IsActiveOrderBy
 	} else if orderBy == "updated_at" {
-		search.OrderBy = models.UpdatedAtOrderBy
+		search.OrderBy = configurations.UpdatedAtOrderBy
 	}
 
 	order := c.Query("order")
 	if order == "" || order == "asc" {
-		search.Order = models.Asc
+		search.Order = configurations.Asc
 	} else if order == "desc" {
-		search.Order = models.Desc
+		search.Order = configurations.Desc
 	}
 
 	text := c.Query("text")
@@ -89,7 +90,7 @@ func GetUsers(c *gin.Context) {
 		items[i] = user.ToOutput()
 	}
 
-	c.JSON(http.StatusOK, models.Pagination{
+	c.JSON(http.StatusOK, configurations.Pagination{
 		Total: len(items),
 		Page:  1,
 		Items: items,
@@ -121,7 +122,7 @@ func validateEmailExistence(email string) (bool, error) {
 }
 
 func CreateUser(c *gin.Context) {
-	var input models.UserCreate
+	var input configurations.UserCreate
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -160,7 +161,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var input models.UserUpdate
+	var input configurations.UserUpdate
 	err = c.ShouldBindJSON(&input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -206,7 +207,7 @@ func GetMe(c *gin.Context) {
 		return
 	}
 
-	user, err := repositories.GetUserByID(u.(models.UserToken).ID)
+	user, err := repositories.GetUserByID(u.(auth.UserToken).ID)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user data"})

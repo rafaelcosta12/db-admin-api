@@ -1,4 +1,4 @@
-package models
+package configurations
 
 type Order string
 

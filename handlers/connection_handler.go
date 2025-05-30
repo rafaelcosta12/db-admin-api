@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"db-admin/models"
+	"db-admin/models/configurations"
 	"db-admin/repositories"
 	"net/http"
 
@@ -10,7 +10,7 @@ import (
 )
 
 func CreateConnection(c *gin.Context) {
-	var connection models.ConnectionCreate
+	var connection configurations.ConnectionCreate
 	if err := c.ShouldBindJSON(&connection); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

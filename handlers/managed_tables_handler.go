@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"db-admin/models"
+	"db-admin/models/configurations"
 	"db-admin/repositories"
 	"net/http"
 
@@ -24,7 +24,7 @@ func GetManagedTables(c *gin.Context) {
 }
 
 func CreateManagedTable(c *gin.Context) {
-	var input models.ManagedTableCreate
+	var input configurations.ManagedTableCreate
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
 		return

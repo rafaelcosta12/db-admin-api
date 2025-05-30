@@ -1,7 +1,8 @@
 package core
 
 import (
-	"db-admin/models"
+	"db-admin/models/auth"
+	"db-admin/models/configurations"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -9,7 +10,7 @@ import (
 
 var jwtSecret = []byte("my_secret_key")
 
-func GenerateToken(user models.User) (string, error) {
+func GenerateToken(user configurations.User) (string, error) {
 	claims := jwt.MapClaims{
 		"sub":      user.ID,
 		"iss":      "db-admin.devstacker.com",
@@ -24,7 +25,7 @@ func GenerateToken(user models.User) (string, error) {
 	return token.SignedString(jwtSecret)
 }
 
-func ValidateToken(tokenString string) (models.UserToken, error) {
+func ValidateToken(tokenString string) (auth.UserToken, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
@@ -33,11 +34,11 @@ func ValidateToken(tokenString string) (models.UserToken, error) {
 	})
 
 	if err != nil {
-		return models.UserToken{}, err
+		return auth.UserToken{}, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		user := models.UserToken{
+		user := auth.UserToken{
 			ID:      int(claims["user_id"].(float64)),
 			Email:   claims["email"].(string),
 			Name:    claims["name"].(string),
@@ -46,5 +47,5 @@ func ValidateToken(tokenString string) (models.UserToken, error) {
 		return user, nil
 	}
 
-	return models.UserToken{}, jwt.ErrSignatureInvalid
+	return auth.UserToken{}, jwt.ErrSignatureInvalid
 }

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"db-admin/models"
+	"db-admin/models/configurations"
 	"db-admin/repositories"
 	"net/http"
 	"strconv"
@@ -11,7 +11,7 @@ import (
 )
 
 func CreateUserGroup(c *gin.Context) {
-	var input models.UserGroupCreate
+	var input configurations.UserGroupCreate
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -36,7 +36,7 @@ func UpdateUserGroup(c *gin.Context) {
 		return
 	}
 
-	var input models.UserGroupUpdate
+	var input configurations.UserGroupUpdate
 	err = c.ShouldBindJSON(&input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -88,7 +88,7 @@ func GetUserGroups(c *gin.Context) {
 		items[i] = userGroup.ToOutput()
 	}
 
-	c.JSON(http.StatusOK, models.Pagination{
+	c.JSON(http.StatusOK, configurations.Pagination{
 		Total: len(items),
 		Page:  1,
 		Items: items,
@@ -146,7 +146,7 @@ func AddUserToGroup(c *gin.Context) {
 		return
 	}
 
-	member := models.UserGroupMember{
+	member := configurations.UserGroupMember{
 		UserID:      userId,
 		UserGroupID: groupId,
 		CreatedAt:   time.Now(),
@@ -197,7 +197,7 @@ func GetUserGroupMembers(c *gin.Context) {
 		return
 	}
 
-	var memberOutputs []models.UserOutput
+	var memberOutputs []configurations.UserOutput
 	for _, member := range members {
 		memberOutputs = append(memberOutputs, member.ToOutput())
 	}
