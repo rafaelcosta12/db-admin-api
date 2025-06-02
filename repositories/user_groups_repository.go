@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"db-admin/core"
-	"db-admin/models/dto"
 	"db-admin/models/entities"
 )
 
@@ -70,7 +69,7 @@ func DeleteUserGroup(id int) error {
 	return nil
 }
 
-func AddUserToGroup(input dto.UserGroupMember) (dto.UserGroupMember, error) {
+func AddUserToGroup(input entities.UserGroupMember) (entities.UserGroupMember, error) {
 	var query = `
 	INSERT INTO user_group_membership 
 	(user_id, group_id, created_at, updated_at) 
@@ -80,7 +79,7 @@ func AddUserToGroup(input dto.UserGroupMember) (dto.UserGroupMember, error) {
 
 	err := core.AppDB.QueryRow(query, input.UserID, input.UserGroupID, input.CreatedAt, input.UpdatedAt).Scan(&input.ID)
 	if err != nil {
-		return dto.UserGroupMember{}, err
+		return entities.UserGroupMember{}, err
 	}
 
 	return input, nil

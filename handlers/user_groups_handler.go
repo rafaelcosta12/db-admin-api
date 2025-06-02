@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"db-admin/models/dto"
+	"db-admin/models/entities"
 	"db-admin/repositories"
 	"net/http"
 	"strconv"
@@ -146,7 +147,7 @@ func AddUserToGroup(c *gin.Context) {
 		return
 	}
 
-	member := dto.UserGroupMember{
+	member := entities.UserGroupMember{
 		UserID:      userId,
 		UserGroupID: groupId,
 		CreatedAt:   time.Now(),
@@ -159,7 +160,7 @@ func AddUserToGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, member.ToOutput())
+	c.JSON(http.StatusCreated, dto.ToUserGroupMemberOutput(&member))
 }
 
 func RemoveUserFromGroup(c *gin.Context) {
