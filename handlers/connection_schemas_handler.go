@@ -1,30 +1,26 @@
 package handlers
 
 import (
-	"db-admin/repositories"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func GetSchemas(c *gin.Context) {
-	connectionId, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid connection ID"})
-		return
-	}
+	// connectionId, err := uuid.Parse(c.Param("id"))
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid connection ID"})
+	// 	return
+	// }
 
-	schemas, err := repositories.GetSchemas(connectionId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tables"})
-		return
-	}
+	// schemas, err := repositories.GetSchemas(connectionId)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tables"})
+	// 	return
+	// }
 
-	output := make([]any, len(schemas))
-	for i, schema := range schemas {
-		output[i] = schema.ToOutput()
-	}
+	// output := make([]any, len(schemas))
+	// for i, schema := range schemas {
+	// 	output[i] = schema.ToOutput()
+	// }
 
-	c.JSON(http.StatusOK, output)
+	// c.JSON(http.StatusOK, output)
 }

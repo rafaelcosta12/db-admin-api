@@ -1,4 +1,4 @@
-package entities
+package connection
 
 import (
 	"db-admin/models/entities/vo"
@@ -8,7 +8,7 @@ import (
 )
 
 type Connection struct {
-	Entity
+	ID               uuid.UUID
 	ConnectionString vo.ConnectionString
 	Name             string
 }
@@ -24,9 +24,7 @@ func NewConnection(connectionString, name string) (*Connection, error) {
 	}
 
 	return &Connection{
-		Entity: Entity{
-			ID: uuid.New(),
-		},
+		ID:               uuid.New(),
 		ConnectionString: connStrVo,
 		Name:             name,
 	}, nil

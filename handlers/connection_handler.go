@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"db-admin/infrastructure"
 	"db-admin/models/dto"
-	"db-admin/repositories"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +24,7 @@ func CreateConnection(c *gin.Context) {
 		return
 	}
 
-	ConnectionRepository := repositories.ConnectionRepository{}
+	ConnectionRepository := infrastructure.ConnectionRepository{}
 
 	// Save the connection using the repository
 	err = ConnectionRepository.Save(connection)
@@ -38,7 +38,7 @@ func CreateConnection(c *gin.Context) {
 }
 
 func GetConnections(c *gin.Context) {
-	ConnectionRepository := repositories.ConnectionRepository{}
+	ConnectionRepository := infrastructure.ConnectionRepository{}
 
 	connections, err := ConnectionRepository.GetAll()
 	if err != nil {
@@ -61,7 +61,7 @@ func RemoveConnection(c *gin.Context) {
 		return
 	}
 
-	ConnectionRepository := repositories.ConnectionRepository{}
+	ConnectionRepository := infrastructure.ConnectionRepository{}
 
 	// Retrieve the connection by ID
 	connection, err := ConnectionRepository.GetById(id)

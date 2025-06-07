@@ -1,10 +1,10 @@
-package repositories
+package infrastructure
 
 import (
 	"testing"
 
 	"db-admin/core"
-	"db-admin/models/entities"
+	"db-admin/models/entities/connection"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +13,7 @@ func TestConnectionRepository_CRUD_Success(t *testing.T) {
 	core.ConfigureAppDB()
 	repo := &ConnectionRepository{}
 
-	newConnection, err := entities.NewConnection("postgres://user:password@localhost:5432/dbname", "TestConnection")
+	newConnection, err := connection.NewConnection("postgres://user:password@localhost:5432/dbname", "TestConnection")
 	assert.NoError(t, err)
 
 	err = repo.Save(newConnection)
@@ -22,7 +22,7 @@ func TestConnectionRepository_CRUD_Success(t *testing.T) {
 	connection, err := repo.GetById(newConnection.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, "TestConnection", connection.Name)
-	assert.Equal(t, "postgres://user:password@localhost:5432/dbname", connection.ConnectionString)
+	assert.Equal(t, "postgres://user:password@localhost:5432/dbname", connection.ConnectionString.String())
 
 	// get all connections
 	connections, err := repo.GetAll()
@@ -40,6 +40,6 @@ func TestConnectionRepository_CRUD_Success(t *testing.T) {
 	err = repo.Delete(connection)
 	assert.NoError(t, err)
 
-	connection, err = repo.GetById(connection.ID)
+	_, err = repo.GetById(connection.ID)
 	assert.Error(t, err) // Expect an error since the connection was deleted
 }

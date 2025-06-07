@@ -2,7 +2,7 @@ package core
 
 import (
 	"database/sql"
-	"db-admin/models/entities"
+	"db-admin/models/entities/connection"
 	"log"
 	"sync"
 	"time"
@@ -29,7 +29,7 @@ func ConfigureAppDB() {
 var connectedDBs = map[uuid.UUID]*sqlx.DB{}
 var mu sync.Mutex
 
-func connectDB(connection entities.Connection) (*sqlx.DB, error) {
+func connectDB(connection connection.Connection) (*sqlx.DB, error) {
 	var err error
 	db, err := sqlx.Connect(connection.ConnectionString.Value().Scheme, connection.ConnectionString.String())
 	if err != nil {
@@ -43,38 +43,21 @@ func connectDB(connection entities.Connection) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func GetConnectionByID(id uuid.UUID) (entities.Connection, error) {
-	var connection entities.Connection
-	err := AppDB.Get(&connection, "SELECT id, driver, connection_string, name FROM connections WHERE id = $1", id)
-	if err != nil {
-		return entities.Connection{}, err
-	}
-	return connection, nil
-}
-
 func DeleteConnection(id uuid.UUID) error {
-	_, err := AppDB.Exec("DELETE FROM connections WHERE id = $1", id)
-	if err != nil {
-		return err
-	}
 	mu.Lock()
 	defer mu.Unlock()
 	delete(connectedDBs, id)
 	return nil
 }
 
-func UpdateConnection(id uuid.UUID, connection entities.Connection) (entities.Connection, error) {
-	_, err := AppDB.NamedExec("UPDATE connections SET driver = :driver, connection_string = :connection_string, name = :name WHERE id = :id", connection)
-	if err != nil {
-		return entities.Connection{}, err
-	}
+func UpdateConnection(id uuid.UUID, connection connection.Connection) (connection.Connection, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	connectedDBs[id] = nil // Remove the cached connection
 	return connection, nil
 }
 
-func GetDB(id uuid.UUID) (*sqlx.DB, error) {
+func GetDB(id uuid.UUID, connRepo connection.Repository) (*sqlx.DB, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -82,7 +65,7 @@ func GetDB(id uuid.UUID) (*sqlx.DB, error) {
 		return db, nil
 	}
 
-	connection, err := GetConnectionByID(id)
+	connection, err := connRepo.GetByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("No connection found for id: %d", id)
@@ -92,5 +75,5 @@ func GetDB(id uuid.UUID) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	return connectDB(connection)
+	return connectDB(*connection)
 }

@@ -1,7 +1,7 @@
 package tables
 
 import (
-	"db-admin/models/entities"
+	"db-admin/models/entities/connection"
 
 	"github.com/google/uuid"
 )
@@ -12,7 +12,7 @@ type ConnectionTable struct {
 	Name             string    `db:"name"`
 }
 
-func ToConnectionTable(dest *entities.Connection) ConnectionTable {
+func ToConnectionTable(dest *connection.Connection) ConnectionTable {
 	return ConnectionTable{
 		ID:               dest.ID,
 		ConnectionString: dest.ConnectionString.String(),
@@ -20,6 +20,6 @@ func ToConnectionTable(dest *entities.Connection) ConnectionTable {
 	}
 }
 
-func FromConnectionTable(src *ConnectionTable) (*entities.Connection, error) {
-	return entities.NewConnection(src.ConnectionString, src.Name)
+func FromConnectionTable(src *ConnectionTable) (*connection.Connection, error) {
+	return connection.NewConnection(src.ConnectionString, src.Name)
 }

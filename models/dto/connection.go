@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"db-admin/models/entities"
+	"db-admin/models/entities/connection"
 
 	"github.com/google/uuid"
 )
@@ -21,11 +21,11 @@ type ConnectionOutput struct {
 	Name             string    `json:"name"`
 }
 
-func (c *ConnectionCreate) ToConnection() (*entities.Connection, error) {
-	return entities.NewConnection(c.ConnectionString, c.Name)
+func (c *ConnectionCreate) ToConnection() (*connection.Connection, error) {
+	return connection.NewConnection(c.ConnectionString, c.Name)
 }
 
-func ToConnectionOutput(c *entities.Connection) ConnectionOutput {
+func ToConnectionOutput(c *connection.Connection) ConnectionOutput {
 	return ConnectionOutput{
 		ID:               c.ID,
 		ConnectionString: c.ConnectionString.String(), // Mask sensitive data
