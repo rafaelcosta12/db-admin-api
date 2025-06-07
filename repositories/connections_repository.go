@@ -25,7 +25,7 @@ func DeleteConnection(connectionID uuid.UUID) error {
 
 func GetAllConnections() ([]entities.Connection, error) {
 	connections := []entities.Connection{}
-	err := core.AppDB.Select(&connections, "SELECT id, driver, connection_string, name FROM connections")
+	err := core.AppDB.Select(&connections, "SELECT id, connection_string, name FROM connections")
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ type ConnectionRepository struct {
 	BaseRepository
 }
 
-var getByIdQuery = `SELECT id, connection_string, name, driver FROM connections WHERE id = $1`
+var getByIdQuery = `SELECT id, connection_string, name FROM connections WHERE id = $1`
 
 func (repo *ConnectionRepository) GetById(id uuid.UUID) (*entities.Connection, error) {
 	var c tables.ConnectionTable
@@ -160,15 +160,14 @@ func (repo *ConnectionRepository) GetById(id uuid.UUID) (*entities.Connection, e
 	if err != nil {
 		return nil, err
 	}
-	return tables.FromConnectionTable(&c), nil
+	return tables.FromConnectionTable(&c)
 }
 
 var saveQuery = `
-INSERT INTO connections (id, driver, connection_string, name)
-VALUES (:id, :driver, :connection_string, :name)
+INSERT INTO connections (id, connection_string, name)
+VALUES (:id, :connection_string, :name)
 ON CONFLICT (id) DO UPDATE
-SET driver = :driver,
-	connection_string = :connection_string,
+SET connection_string = :connection_string,
 	name = :name
 `
 
@@ -190,7 +189,7 @@ func (repo *ConnectionRepository) Delete(entity *entities.Connection) error {
 	return nil
 }
 
-var getAllQuery = `SELECT id, driver, connection_string, name FROM connections`
+var getAllQuery = `SELECT id, connection_string, name FROM connections`
 
 func (repo *ConnectionRepository) GetAll() (*[]*entities.Connection, error) {
 	var connections []tables.ConnectionTable
@@ -200,10 +199,14 @@ func (repo *ConnectionRepository) GetAll() (*[]*entities.Connection, error) {
 		return nil, err
 	}
 
-	dest := make([]*entities.Connection, len(connections))
-	for i, c := range connections {
-		dest[i] = tables.FromConnectionTable(&c)
+	var desti []*entities.Connection
+	for _, c := range connections {
+		a, err := tables.FromConnectionTable(&c)
+		if err != nil {
+			continue
+		}
+		desti = append(desti, a)
 	}
 
-	return &dest, nil
+	return &desti, nil
 }

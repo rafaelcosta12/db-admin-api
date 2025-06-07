@@ -31,7 +31,7 @@ var mu sync.Mutex
 
 func connectDB(connection entities.Connection) (*sqlx.DB, error) {
 	var err error
-	db, err := sqlx.Connect("postgres", connection.ConnectionString)
+	db, err := sqlx.Connect(connection.ConnectionString.Value().Scheme, connection.ConnectionString.String())
 	if err != nil {
 		return nil, err
 	}

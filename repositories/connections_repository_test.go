@@ -13,7 +13,7 @@ func TestConnectionRepository_CRUD_Success(t *testing.T) {
 	core.ConfigureAppDB()
 	repo := &ConnectionRepository{}
 
-	newConnection, err := entities.NewConnection("postgres://user:password@localhost:5432/dbname", "TestConnection", "postgres")
+	newConnection, err := entities.NewConnection("postgres://user:password@localhost:5432/dbname", "TestConnection")
 	assert.NoError(t, err)
 
 	err = repo.Save(newConnection)
@@ -23,7 +23,6 @@ func TestConnectionRepository_CRUD_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "TestConnection", connection.Name)
 	assert.Equal(t, "postgres://user:password@localhost:5432/dbname", connection.ConnectionString)
-	assert.Equal(t, "postgres", connection.Driver)
 
 	// get all connections
 	connections, err := repo.GetAll()
