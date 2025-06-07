@@ -52,15 +52,6 @@ func GetConnectionByID(id uuid.UUID) (entities.Connection, error) {
 	return connection, nil
 }
 
-func CreateConnection(connection entities.Connection) (entities.Connection, error) {
-	connection.ID = uuid.New()
-	_, err := AppDB.NamedExec("INSERT INTO connections (id, driver, connection_string, name) VALUES (:id, :driver, :connection_string, :name)", connection)
-	if err != nil {
-		return entities.Connection{}, err
-	}
-	return connection, nil
-}
-
 func DeleteConnection(id uuid.UUID) error {
 	_, err := AppDB.Exec("DELETE FROM connections WHERE id = $1", id)
 	if err != nil {

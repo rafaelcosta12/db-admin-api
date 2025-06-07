@@ -1,7 +1,7 @@
 package core
 
 import (
-	"db-admin/models/dto"
+	"db-admin/models/entities"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -49,7 +49,7 @@ func ShouldBeAdminOr403() gin.HandlerFunc {
 			return
 		}
 
-		if !user.(dto.UserToken).IsAdmin {
+		if !user.(entities.UserToken).IsAdmin {
 			c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to access this resource"})
 			c.Abort()
 			return

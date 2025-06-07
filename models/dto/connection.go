@@ -23,16 +23,11 @@ type ConnectionOutput struct {
 	Driver           string    `json:"driver"`
 }
 
-func (c *ConnectionCreate) ToConnection() entities.Connection {
-	return entities.Connection{
-		ID:               uuid.New(),
-		ConnectionString: c.ConnectionString,
-		Name:             c.Name,
-		Driver:           c.Driver,
-	}
+func (c *ConnectionCreate) ToConnection() (*entities.Connection, error) {
+	return entities.NewConnection(c.ConnectionString, c.Name, c.Driver)
 }
 
-func ToConnectionOutput(c entities.Connection) ConnectionOutput {
+func ToConnectionOutput(c *entities.Connection) ConnectionOutput {
 	return ConnectionOutput{
 		ID:               c.ID,
 		ConnectionString: "********", // Mask sensitive data

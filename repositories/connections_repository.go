@@ -4,6 +4,7 @@ import (
 	"db-admin/core"
 	"db-admin/models/database"
 	"db-admin/models/entities"
+	"db-admin/repositories/tables"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -16,18 +17,6 @@ var restrictedSchemas = []string{
 	"information_schema",
 	"pg_catalog",
 	"pg_internal",
-}
-
-func GetConnectionByID(connectionID uuid.UUID) (entities.Connection, error) {
-	return core.GetConnectionByID(connectionID)
-}
-
-func CreateConnection(connection entities.Connection) (entities.Connection, error) {
-	return core.CreateConnection(connection)
-}
-
-func UpdateConnection(connectionID uuid.UUID, connection entities.Connection) (entities.Connection, error) {
-	return core.UpdateConnection(connectionID, connection)
 }
 
 func DeleteConnection(connectionID uuid.UUID) error {
@@ -157,4 +146,64 @@ func fetchColumnsForTables(tables *[]database.Table, conn *sqlx.DB) error {
 		}
 	}
 	return nil
+}
+
+type ConnectionRepository struct {
+	BaseRepository
+}
+
+var getByIdQuery = `SELECT id, connection_string, name, driver FROM connections WHERE id = $1`
+
+func (repo *ConnectionRepository) GetById(id uuid.UUID) (*entities.Connection, error) {
+	var c tables.ConnectionTable
+	err := core.AppDB.Get(&c, getByIdQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	return tables.FromConnectionTable(&c), nil
+}
+
+var saveQuery = `
+INSERT INTO connections (id, driver, connection_string, name)
+VALUES (:id, :driver, :connection_string, :name)
+ON CONFLICT (id) DO UPDATE
+SET driver = :driver,
+	connection_string = :connection_string,
+	name = :name
+`
+
+func (repo *ConnectionRepository) Save(entity *entities.Connection) error {
+	_, err := core.AppDB.NamedExec(saveQuery, tables.ToConnectionTable(entity))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+var deleteQuery = `DELETE FROM connections WHERE id = :id`
+
+func (repo *ConnectionRepository) Delete(entity *entities.Connection) error {
+	_, err := core.AppDB.NamedExec(deleteQuery, tables.ToConnectionTable(entity))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+var getAllQuery = `SELECT id, driver, connection_string, name FROM connections`
+
+func (repo *ConnectionRepository) GetAll() (*[]*entities.Connection, error) {
+	var connections []tables.ConnectionTable
+
+	err := core.AppDB.Select(&connections, getAllQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	dest := make([]*entities.Connection, len(connections))
+	for i, c := range connections {
+		dest[i] = tables.FromConnectionTable(&c)
+	}
+
+	return &dest, nil
 }

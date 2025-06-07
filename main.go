@@ -19,31 +19,31 @@ func configureCors(r *gin.Engine) {
 func configureConfigurationEndpoints(r *gin.Engine) {
 	configurations := r.Group("configurations", core.ShouldBeAdminOr403())
 	configurations.GET("users/:id", handlers.GetUserByID)
-	configurations.PUT("users/:id", core.ShouldBeAdminOr403(), handlers.UpdateUser)
-	configurations.DELETE("users/:id", core.ShouldBeAdminOr403(), handlers.DeleteUser)
+	configurations.PUT("users/:id", handlers.UpdateUser)
+	configurations.DELETE("users/:id", handlers.DeleteUser)
 	configurations.GET("users/me", handlers.GetMe)
 	configurations.GET("users", handlers.GetUsers)
-	configurations.POST("users", core.ShouldBeAdminOr403(), handlers.CreateUser)
+	configurations.POST("users", handlers.CreateUser)
 
 	configurations.GET("user-groups", handlers.GetUserGroups)
-	configurations.POST("user-groups", core.ShouldBeAdminOr403(), handlers.CreateUserGroup)
-	configurations.PUT("user-groups/:id", core.ShouldBeAdminOr403(), handlers.UpdateUserGroup)
-	configurations.DELETE("user-groups/:id", core.ShouldBeAdminOr403(), handlers.DeleteUserGroup)
+	configurations.POST("user-groups", handlers.CreateUserGroup)
+	configurations.PUT("user-groups/:id", handlers.UpdateUserGroup)
+	configurations.DELETE("user-groups/:id", handlers.DeleteUserGroup)
 	configurations.GET("user-groups/:id", handlers.GetUserGroupByID)
 
 	configurations.GET("user-groups/:id/users", handlers.GetUserGroupMembers)
-	configurations.POST("user-groups/:id/users/:id_user", core.ShouldBeAdminOr403(), handlers.AddUserToGroup)
-	configurations.DELETE("user-groups/:id/users/:id_user", core.ShouldBeAdminOr403(), handlers.RemoveUserFromGroup)
+	configurations.POST("user-groups/:id/users/:id_user", handlers.AddUserToGroup)
+	configurations.DELETE("user-groups/:id/users/:id_user", handlers.RemoveUserFromGroup)
 
 	// Escopo connections é sobre comunicação direta com o banco de dados
-	configurations.GET("connections", core.ShouldBeAdminOr403(), handlers.GetConnections)
-	configurations.POST("connections", core.ShouldBeAdminOr403(), handlers.CreateConnection)
-	configurations.GET("connections/:id/schemas", core.ShouldBeAdminOr403(), handlers.GetSchemas)
-	configurations.DELETE("connections/:id", core.ShouldBeAdminOr403(), handlers.RemoveConnection)
+	configurations.GET("connections", handlers.GetConnections)
+	configurations.POST("connections", handlers.CreateConnection)
+	configurations.GET("connections/:id/schemas", handlers.GetSchemas)
+	configurations.DELETE("connections/:id", handlers.RemoveConnection)
 
 	// Ecopo managed-tables é sobre configuração de tabelas gerenciadas
-	configurations.GET("managed-tables", core.ShouldBeAdminOr403(), handlers.GetManagedTables)
-	configurations.POST("managed-tables", core.ShouldBeAdminOr403(), handlers.CreateManagedTable)
+	configurations.GET("managed-tables", handlers.GetManagedTables)
+	configurations.POST("managed-tables", handlers.CreateManagedTable)
 }
 
 func main() {

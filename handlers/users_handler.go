@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"db-admin/models/dto"
+	"db-admin/models/entities"
 	"db-admin/repositories"
 	"net/http"
 	"strconv"
@@ -206,7 +207,7 @@ func GetMe(c *gin.Context) {
 		return
 	}
 
-	user, err := repositories.GetUserByID(u.(dto.UserToken).ID)
+	user, err := repositories.GetUserByID(u.(entities.UserToken).ID)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user data"})

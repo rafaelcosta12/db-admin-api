@@ -10,30 +10,44 @@ import (
 )
 
 func CreateConnection(c *gin.Context) {
-	var connection dto.ConnectionCreate
-	if err := c.ShouldBindJSON(&connection); err != nil {
+	// Bind the incoming JSON to the ConnectionCreate DTO
+	var input dto.ConnectionCreate
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	conn, err := repositories.CreateConnection(connection.ToConnection())
+	// Convert the DTO to a Connection entity
+	connection, err := input.ToConnection()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create connection"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.ToConnectionOutput(conn))
+	ConnectionRepository := repositories.ConnectionRepository{}
+
+	// Save the connection using the repository
+	err = ConnectionRepository.Save(connection)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the created connection as a response
+	c.JSON(http.StatusCreated, dto.ToConnectionOutput(connection))
 }
 
 func GetConnections(c *gin.Context) {
-	connections, err := repositories.GetAllConnections()
+	ConnectionRepository := repositories.ConnectionRepository{}
+
+	connections, err := ConnectionRepository.GetAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve connections"})
 		return
 	}
 
-	var output []any = make([]any, len(connections))
-	for i, conn := range connections {
+	var output []any = make([]any, len(*connections))
+	for i, conn := range *connections {
 		output[i] = dto.ToConnectionOutput(conn)
 	}
 
@@ -47,7 +61,18 @@ func RemoveConnection(c *gin.Context) {
 		return
 	}
 
-	err = repositories.DeleteConnection(id)
+	ConnectionRepository := repositories.ConnectionRepository{}
+
+	// Retrieve the connection by ID
+	connection, err := ConnectionRepository.GetById(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Connection not found"})
+		return
+	}
+
+	// Delete the connection using the repository
+	err = ConnectionRepository.Delete(connection)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete connection"})
 		return
